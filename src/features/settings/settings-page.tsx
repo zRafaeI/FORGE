@@ -1,13 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Download, HardDrive, Upload } from "lucide-react";
+import { Cloud, Download, HardDrive, LogOut, Upload } from "lucide-react";
 import { CATEGORIES } from "@/lib/domain/categories";
 import { CATEGORY_IDS, type CategoryId } from "@/lib/domain/types";
 import { fieldErrors, profileInputSchema } from "@/lib/domain/schemas";
 import { updateProfile } from "@/lib/store/actions";
 import { useForge } from "@/lib/store/forge-store";
-import { supabaseConfigured } from "@/lib/data";
+import { useAuth } from "@/lib/store/auth";
 import { toDateKey } from "@/lib/logic/dates";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,16 @@ import { Field, Input, Toggle } from "@/components/ui/form";
 import { useToast } from "@/components/ui/feedback";
 
 export function SettingsPage() {
-  const { data, update, exportJson, importJson, reset } = useForge();
+  const { data, update, exportJson, importJson, reset, syncStatus } = useForge();
+  const auth = useAuth();
+  const cloud = auth.mode === "cloud" && auth.user;
+  const SYNC_LABEL: Record<string, string> = {
+    synced: "Tudo sincronizado.",
+    saving: "Salvando alterações…",
+    offline: "Sem conexão. As alterações estão neste dispositivo e serão enviadas quando a internet voltar.",
+    error: "Houve um problema ao sincronizar. Tente recarregar a página.",
+    local: "",
+  };
   const toast = useToast();
   const p = data.profile!;
   const [name, setName] = useState(p.name);
@@ -130,18 +139,31 @@ export function SettingsPage() {
           <h2 id="data-title" className="type-title text-[15px]">
             Seus dados
           </h2>
-          <div className="surface flex gap-4 rounded-lg p-5">
-            <HardDrive size={18} className="mt-0.5 shrink-0 text-accent" />
-            <div className="text-sm leading-relaxed">
-              <p>Salvos neste navegador</p>
-              <p className="mt-1 text-muted">
-                Tudo fica no armazenamento local deste dispositivo — nada é enviado para servidores.
-                {supabaseConfigured
-                  ? " Credenciais do Supabase detectadas; a sincronização entra na próxima fase."
-                  : " A sincronização entre dispositivos (Supabase) entra numa próxima fase. Até lá, exporte backups regularmente."}
-              </p>
+          {cloud ? (
+            <div className="surface flex gap-4 rounded-lg p-5">
+              <Cloud size={18} className="mt-0.5 shrink-0 text-accent" />
+              <div className="min-w-0 flex-1 text-sm leading-relaxed">
+                <p>Sincronizados com sua conta</p>
+                <p className="truncate text-muted">{auth.user!.email}</p>
+                <p className="mt-2 text-xs text-faint" role="status">
+                  {SYNC_LABEL[syncStatus]}
+                </p>
+                <Button size="sm" variant="ghost" className="mt-3 -ml-3" icon={<LogOut size={15} />} onClick={() => void auth.signOut()}>
+                  Sair da conta
+                </Button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="surface flex gap-4 rounded-lg p-5">
+              <HardDrive size={18} className="mt-0.5 shrink-0 text-accent" />
+              <div className="text-sm leading-relaxed">
+                <p>Salvos neste navegador</p>
+                <p className="mt-1 text-muted">
+                  Tudo fica no armazenamento local deste dispositivo — nada é enviado para servidores. Exporte backups regularmente.
+                </p>
+              </div>
+            </div>
+          )}
           <div className="flex flex-wrap gap-2">
             <Button icon={<Download size={16} />} onClick={download}>
               Exportar backup
@@ -158,7 +180,9 @@ export function SettingsPage() {
           <div className="mt-6 border-t border-line-soft pt-6">
             <p className="text-sm">Apagar todos os dados</p>
             <p className="mt-1 text-xs leading-relaxed text-faint">
-              Remove perfil, rotina, hábitos e histórico deste navegador e reinicia a configuração inicial.
+              {cloud
+                ? "Remove perfil, rotina, hábitos e todo o histórico da sua conta e deste navegador, e reinicia a configuração inicial."
+                : "Remove perfil, rotina, hábitos e histórico deste navegador e reinicia a configuração inicial."}
             </p>
             <Button variant="danger" size="sm" className="mt-4" onClick={() => setConfirmReset(true)}>
               Apagar dados
@@ -172,7 +196,11 @@ export function SettingsPage() {
         onClose={() => setConfirmReset(false)}
         onConfirm={() => void reset()}
         title="Apagar todos os dados?"
-        description="Isto não pode ser desfeito. Se quiser guardar seu histórico, exporte um backup antes."
+        description={
+          cloud
+            ? "Os dados serão apagados da sua conta em todos os dispositivos. Isto não pode ser desfeito. Se quiser guardar seu histórico, exporte um backup antes."
+            : "Isto não pode ser desfeito. Se quiser guardar seu histórico, exporte um backup antes."
+        }
         confirmLabel="Apagar tudo"
       />
     </>

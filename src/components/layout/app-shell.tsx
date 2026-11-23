@@ -14,12 +14,26 @@ import { Wordmark } from "./logo";
 import { TimerIndicator } from "@/features/study/timer-indicator";
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { data, status, error, dismissError } = useForge();
+  const { data, status, error, dismissError, retry, syncStatus } = useForge();
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => setMoreOpen(false), [pathname]);
 
   if (status === "loading") return <LoadingScreen />;
+  if (status === "error" && !data.profile)
+    return (
+      <div className="ambient flex min-h-dvh items-center justify-center px-6">
+        <div className="max-w-sm">
+          <Wordmark />
+          <p className="mt-8 text-[15px] leading-relaxed text-muted" role="alert">
+            {error ?? "Não foi possível carregar seus dados."}
+          </p>
+          <button type="button" onClick={retry} className="mt-6 rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-bg">
+            Tentar de novo
+          </button>
+        </div>
+      </div>
+    );
   if (!data.profile) return <OnboardingFlow />;
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
@@ -66,8 +80,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             </span>
           ))}
         </nav>
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col gap-2">
           <TimerIndicator />
+          {syncStatus === "offline" && (
+            <p className="rounded-md border border-line px-3 py-2 text-xs leading-relaxed text-muted" role="status">
+              Sem conexão. Suas alterações estão salvas neste dispositivo e serão enviadas quando a internet voltar.
+            </p>
+          )}
         </div>
         <Link
           href="/configuracoes"
@@ -94,6 +113,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           <TimerIndicator compact />
         </header>
 
+        {syncStatus === "offline" && (
+          <p role="status" className="mx-5 mt-4 rounded-md border border-line px-3.5 py-2.5 text-xs text-muted lg:hidden">
+            Sem conexão. Suas alterações estão salvas neste dispositivo e serão enviadas quando a internet voltar.
+          </p>
+        )}
         {error && (
           <div role="alert" className="mx-5 mt-5 flex items-start gap-3 rounded-md border border-[#55392f] bg-[#2a201c] px-4 py-3 text-sm text-[#f0cfc3] lg:mx-10">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />

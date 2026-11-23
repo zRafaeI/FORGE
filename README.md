@@ -21,10 +21,14 @@ Outros comandos:
 | `npm test`       | Testes unitários da lógica e da persistência |
 | `npm run lint`   | Checagem de tipos (TypeScript estrito)     |
 
-Não é preciso configurar nada: sem variáveis de ambiente, o FORGE salva tudo no
-navegador (localStorage). Veja `.env.example` para a futura integração com Supabase.
+**Dois modos de funcionamento:**
 
-## O que está pronto (v0.4)
+- **Com Supabase** (quando o `.env.local` existe): login com e-mail e senha e dados
+  sincronizados entre dispositivos. Configuração passo a passo em
+  [`docs/SUPABASE.md`](docs/SUPABASE.md).
+- **Sem Supabase** (sem `.env.local`): tudo fica só neste navegador, sem conta.
+
+## O que está pronto (v0.5)
 
 - **Onboarding** em 4 etapas: nome, horários de acordar/dormir, áreas de foco e
   escolha dos primeiros hábitos (sugestões por área + hábitos personalizados).
@@ -68,6 +72,10 @@ navegador (localStorage). Veja `.env.example` para a futura integração com Sup
   categoria, histórico de 6 meses, metas com valores guardados e retirados, e
   reserva de emergência mostrando quantos meses de despesas ela cobre. Nenhuma
   conta bancária é conectada.
+- **Conta e sincronização** *(novo na v0.5)*: criar conta, entrar, recuperar senha,
+  sair. Dados salvos no navegador e sincronizados com o Supabase, funcionando
+  offline, com controle de conflito entre dispositivos. Dados que já existiam no
+  navegador vão para a conta no primeiro acesso.
 - **Configurações**: editar perfil e ritmo, ativar/desativar a área espiritual,
   exportar/importar backup em JSON, apagar todos os dados.
 - Responsivo (sidebar no desktop, navegação inferior no celular), acessível por
@@ -75,7 +83,8 @@ navegador (localStorage). Veja `.env.example` para a futura integração com Sup
 
 ## O que ainda falta
 
-Todas as seções do briefing existem. Próximos passos naturais: sincronização entre
-dispositivos com Supabase e autenticação, lembretes opcionais e instalação como app (PWA).
+Todas as seções do briefing existem e a sincronização com Supabase está pronta.
+Próximos passos naturais: publicar o app (Vercel) para usar no celular, instalação
+como app (PWA) e lembretes opcionais.
 
 Detalhes de arquitetura e decisões: [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).

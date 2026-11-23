@@ -1,19 +1,25 @@
 import type { ForgeRepository } from "./repository";
 import { LocalRepository } from "./local-repository";
+import { SyncedRepository } from "./synced-repository";
+import { SupabaseRemote } from "./supabase-remote";
+import { getSupabase, supabaseConfigured } from "./supabase-client";
 
 /**
  * Ponto único de escolha do backend.
- * Hoje: LocalRepository. Quando NEXT_PUBLIC_SUPABASE_URL e
- * NEXT_PUBLIC_SUPABASE_ANON_KEY estiverem configuradas e o SupabaseRepository
- * for implementado (próxima fase), basta retorná-lo aqui.
+ * - Sem Supabase configurado: dados só neste navegador.
+ * - Com Supabase e usuário autenticado: cache local + sincronização com a conta.
  */
-export function createRepository(): ForgeRepository {
+export function createRepository(userId?: string): ForgeRepository {
+  if (supabaseConfigured && userId) {
+    return new SyncedRepository(new SupabaseRemote(getSupabase(), userId), window.localStorage, userId, {
+      addEventListener: (t, fn) => (t === "visibilitychange" ? document : window).addEventListener(t, fn),
+      removeEventListener: (t, fn) => (t === "visibilitychange" ? document : window).removeEventListener(t, fn),
+      isVisible: () => document.visibilityState === "visible",
+    });
+  }
   return new LocalRepository(window.localStorage);
 }
 
-export const supabaseConfigured = Boolean(
-  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-);
-
-export type { ForgeRepository } from "./repository";
+export { supabaseConfigured };
+export type { ForgeRepository, SyncStatus, RepositoryEvent } from "./repository";
 export { RepositoryError } from "./repository";

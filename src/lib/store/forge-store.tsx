@@ -3,7 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { EMPTY_DATA, type ForgeData } from "@/lib/domain/types";
 import { forgeDataSchema } from "@/lib/domain/schemas";
-import { createRepository, RepositoryError, type ForgeRepository } from "@/lib/data";
+import { createRepository, RepositoryError, type ForgeRepository, type SyncStatus } from "@/lib/data";
+import { useToast } from "@/components/ui/feedback";
 import { STORAGE_KEY } from "@/lib/data/local-repository";
 
 type Status = "loading" | "ready" | "error";
@@ -19,21 +20,42 @@ interface ForgeContextValue {
   exportJson: () => string;
   reset: () => Promise<void>;
   dismissError: () => void;
+  /** Estado da sincronização com a conta ("local" quando não há conta). */
+  syncStatus: SyncStatus;
+  /** Tenta carregar de novo após um erro. */
+  retry: () => void;
 }
 
 const ForgeContext = createContext<ForgeContextValue | null>(null);
 
-export function ForgeProvider({ children }: { children: ReactNode }) {
+export function ForgeProvider({ children, userId }: { children: ReactNode; userId?: string }) {
   const repo = useRef<ForgeRepository | null>(null);
   const [data, setData] = useState<ForgeData>(EMPTY_DATA);
   const [status, setStatus] = useState<Status>("loading");
   const [error, setError] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("local");
+  const toast = useToast();
   const dataRef = useRef(data);
   dataRef.current = data;
 
   const load = useCallback(async () => {
     try {
-      repo.current ??= createRepository();
+      if (!repo.current) {
+        repo.current = createRepository(userId);
+        repo.current.subscribe?.((e) => {
+          if (e.type === "status") setSyncStatus(e.status);
+          else {
+            dataRef.current = e.data;
+            setData(e.data);
+            toast({
+              message:
+                e.reason === "conflict"
+                  ? "Seus dados mudaram em outro dispositivo. Esta tela foi atualizada com a versão mais recente."
+                  : "Atualizado com alterações feitas em outro dispositivo.",
+            });
+          }
+        });
+      }
       const loaded = await repo.current.load();
       setData(loaded);
       setStatus("ready");
@@ -42,16 +64,20 @@ export function ForgeProvider({ children }: { children: ReactNode }) {
       setData(structuredClone(EMPTY_DATA));
       setStatus("error");
     }
-  }, []);
+  }, [userId, toast]);
 
   useEffect(() => {
     void load();
-    // Mantém abas diferentes sincronizadas.
+    // Mantém abas diferentes sincronizadas (modo local).
     const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) void load();
+      if (e.key === STORAGE_KEY && repo.current?.kind === "local") void load();
     };
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      repo.current?.dispose?.();
+      repo.current = null;
+    };
   }, [load]);
 
   const persist = useCallback(async (next: ForgeData) => {
@@ -104,8 +130,12 @@ export function ForgeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<ForgeContextValue>(
-    () => ({ data, status, error, update, importJson, exportJson, reset, dismissError: () => setError(null) }),
-    [data, status, error, update, importJson, exportJson, reset],
+    () => ({ data, status, error, update, importJson, exportJson, reset, dismissError: () => setError(null), syncStatus, retry: () => {
+      setError(null);
+      setStatus("loading");
+      void load();
+    } }),
+    [data, status, error, update, importJson, exportJson, reset, syncStatus, load],
   );
 
   return <ForgeContext.Provider value={value}>{children}</ForgeContext.Provider>;

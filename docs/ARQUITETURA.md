@@ -112,53 +112,43 @@ v0.3 a versão 3 (`study`, `nutrition`) e a v0.4 a versão 4 (`faith`, `finance`
 Dados e backups de qualquer versão anterior são migrados automaticamente ao
 carregar ou importar — nada é perdido.
 
-## Persistência e migração para Supabase
+## Persistência e sincronização
 
-Hoje: `LocalRepository` grava o documento `ForgeData` em `localStorage`
-(chave `forge:data:v1`, com `schemaVersion` para migrações futuras).
+- **Sem Supabase configurado**: `LocalRepository` grava o documento `ForgeData` em
+  `localStorage` (chave `forge:data:v1`).
+- **Com Supabase** (`NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`):
+  o app exige login e usa `SyncedRepository`:
+  - cache local por usuário (`forge:data:v1:user:<id>`) — leitura instantânea e uso offline;
+  - um documento por usuário na tabela `public.forge_documents` (JSONB), protegido por RLS;
+  - gravação pela função `save_forge_document(data, versão, revisão esperada)`, que só
+    aceita se a revisão no servidor for a esperada (controle otimista de concorrência);
+  - envios em fila, sempre com a versão mais recente; sem rede, fica pendente e é
+    reenviado no evento `online`;
+  - ao voltar para a aba, busca alterações de outros dispositivos;
+  - no primeiro login, os dados que já existiam no navegador (modo sem conta) são
+    enviados para a conta e o espaço anônimo é liberado (com cópia de segurança).
 
-Para migrar:
+**Por que um documento por usuário, e não uma tabela por entidade?** O app sempre lê e
+grava o estado completo de um único usuário, que é pequeno (centenas de KB mesmo após
+anos). Um documento mantém a interface `ForgeRepository` idêntica nos dois modos,
+torna as migrações de formato (`schemaVersion`) triviais e evita dezenas de tabelas e
+políticas. Se no futuro houver recursos que dependam de consultas no servidor (ex.:
+relatórios, compartilhamento), as coleções podem ser normalizadas em tabelas sem
+mudar a interface.
 
-1. Criar o projeto no Supabase e preencher `.env.local` a partir de `.env.example`.
-2. Criar as tabelas (sugestão):
-   ```sql
-   create table profiles   (user_id uuid primary key references auth.users, name text, wake_time text, sleep_time text, focus_areas text[], faith_enabled bool, onboarded_at timestamptz);
-   create table activities (id uuid primary key, user_id uuid references auth.users, title text, notes text, category text, priority text, time text, duration_min int, recurrence jsonb, created_at timestamptz, updated_at timestamptz, archived_at timestamptz);
-   create table habits     (id uuid primary key, user_id uuid references auth.users, title text, category text, target_time text, recurrence jsonb, created_at timestamptz, updated_at timestamptz, archived_at timestamptz);
-   create table check_ins  (id uuid primary key, user_id uuid references auth.users, item_id uuid, kind text, date date, status text, at timestamptz, unique (item_id, date));
-   create table runs       (id uuid primary key, user_id uuid references auth.users, date date, distance_km numeric, duration_sec int, effort int, notes text, created_at timestamptz);
-   create table workouts   (id uuid primary key, user_id uuid references auth.users, date date, title text, exercises jsonb, duration_min int, notes text, created_at timestamptz);
-   create table subjects   (id uuid primary key, user_id uuid references auth.users, name text, weekly_goal_min int, created_at timestamptz);
-   create table study_sessions (id uuid primary key, user_id uuid references auth.users, subject_id uuid references subjects on delete cascade, date date, minutes int, notes text, source text, created_at timestamptz);
-   create table books      (id uuid primary key, user_id uuid references auth.users, title text, author text, total_pages int, current_page int, status text, started_on date, finished_on date, created_at timestamptz);
-   create table reading_logs (id uuid primary key, user_id uuid references auth.users, book_id uuid references books on delete cascade, date date, from_page int, to_page int, created_at timestamptz);
-   create table planned_meals (id uuid primary key, user_id uuid references auth.users, name text, time text);
-   create table meals      (id uuid primary key, user_id uuid references auth.users, date date, time text, name text, description text, planned_meal_id uuid, created_at timestamptz);
-   create table water_logs (id uuid primary key, user_id uuid references auth.users, date date, ml int, at timestamptz);
-   create table weights    (id uuid primary key, user_id uuid references auth.users, date date, kg numeric, created_at timestamptz, unique (user_id, date));
-   create table faith_entries (id uuid primary key, user_id uuid references auth.users, date date, kind text, reference text, text text, items text[], created_at timestamptz);
-   create table prayers    (id uuid primary key, user_id uuid references auth.users, text text, created_at timestamptz, answered_on date, answer_note text);
-   create table finance_categories (id uuid primary key, user_id uuid references auth.users, name text, flow text);
-   create table transactions (id uuid primary key, user_id uuid references auth.users, date date, flow text, amount_cents bigint, category_id uuid references finance_categories, description text, created_at timestamptz);
-   create table goals      (id uuid primary key, user_id uuid references auth.users, name text, target_cents bigint, deadline date, emergency bool, created_at timestamptz);
-   create table goal_contributions (id uuid primary key, user_id uuid references auth.users, goal_id uuid references goals on delete cascade, date date, amount_cents bigint, created_at timestamptz);
-   -- temporizador em andamento, meta de água, preferência de peso, práticas de fé e saldo inicial: colunas em profiles
-   create table rest_days  (id uuid primary key, user_id uuid references auth.users, date date, note text, created_at timestamptz, unique (user_id, date));
-   ```
-   com Row Level Security restringindo cada linha a `auth.uid() = user_id`.
-3. Implementar `SupabaseRepository` com a mesma interface `ForgeRepository`
-   (`load`, `save`, `clear`) e retorná-lo em `src/lib/data/index.ts` quando as variáveis existirem.
-4. Primeira sincronização: importar o backup local (Configurações → Exportar backup).
-
-A interface do app e a lógica não mudam.
+Passo a passo de configuração: [`SUPABASE.md`](SUPABASE.md). Estrutura do banco:
+[`supabase/schema.sql`](../supabase/schema.sql).
 
 ## Testes
 
-`npm test` (54 testes) cobre datas, recorrência, validação, progresso, descanso, sequências,
+`npm test` (61 testes) cobre datas, recorrência, validação, progresso, descanso, sequências,
 edição/exclusão, o repositório local (incluindo recuperação de dados corrompidos),
 treinamento (ritmo, volume, progressão, semanas, recordes), evolução, estudos (temporizador, metas, leitura), alimentação (plano, água, peso)
 fé (diário, orações), finanças (valores, totais, metas, reserva) e as migrações
-de todas as versões anteriores para a v4.
-A versão 0.1 também foi verificada ponta a ponta num navegador real (onboarding,
+de todas as versões anteriores para a v4, e a sincronização (conta nova com dados
+locais, dois dispositivos, conflito, offline, fila de envios, apagar dados).
+O login e a sincronização também foram verificados num navegador real contra um
+servidor Supabase simulado (cadastro, senha errada, dois dispositivos, conflito,
+offline, troca de conta, recuperação de senha). A versão 0.1 também foi verificada ponta a ponta num navegador real (onboarding,
 criação com validação, conclusão, persistência após recarregar, descanso, edição,
 exclusão com desfazer, desktop e celular).
