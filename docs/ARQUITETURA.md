@@ -113,6 +113,15 @@ src/
     meta alcançada e "só abaixo do ritmo". Notificações com o app fechado exigem Web
     Push com service worker e servidor — próxima etapa, junto com a publicação/PWA.
 
+26. **Versículos vêm de uma tradução de licença aberta, embutidos no app** (funcionam
+    offline, sem depender de serviço externo). Fonte: Bíblia Livre (eBible.org,
+    `porbr2018`, CC BY 4.0), conferida com a página oficial. Edições populares (ARA,
+    NVI, NAA) têm direitos reservados e não podem ser usadas. A lista é gerada por
+    `scripts/build-verses.py` a partir de `scripts/verse-refs.txt`; os ajustes
+    (pontuação, notas, títulos do Salmo 119) e dois erros de digitação do original
+    corrigidos estão documentados no topo de `src/lib/content/verses.ts`. O texto
+    passou por verificação ortográfica.
+
 ## Versões dos dados
 
 O documento salvo tem `schemaVersion`. A v0.2 introduziu a versão 2 (`training`), a
@@ -149,7 +158,7 @@ Passo a passo de configuração: [`SUPABASE.md`](SUPABASE.md). Estrutura do banc
 
 ## Testes
 
-`npm test` (67 testes) cobre datas, recorrência, validação, progresso, descanso, sequências,
+`npm test` (69 testes) cobre datas, recorrência, validação, progresso, descanso, sequências,
 edição/exclusão, o repositório local (incluindo recuperação de dados corrompidos),
 treinamento (ritmo, volume, progressão, semanas, recordes), evolução, estudos (temporizador, metas, leitura), alimentação (plano, água, peso)
 fé (diário, orações), finanças (valores, totais, metas, reserva) e as migrações

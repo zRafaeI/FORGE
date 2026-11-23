@@ -28,7 +28,7 @@ Outros comandos:
   [`docs/SUPABASE.md`](docs/SUPABASE.md).
 - **Sem Supabase** (sem `.env.local`): tudo fica só neste navegador, sem conta.
 
-## O que está pronto (v0.6)
+## O que está pronto (v0.7)
 
 - **Onboarding** em 4 etapas: nome, horários de acordar/dormir, áreas de foco e
   escolha dos primeiros hábitos (sugestões por área + hábitos personalizados).
@@ -74,6 +74,10 @@ Outros comandos:
   bíblica, oração, reflexão, gratidão e aprendizados; você escolhe quais práticas
   acompanhar. Pedidos de oração com registro de respostas. Sem pontuação,
   sequências ou comparações.
+- **Versículo do dia** *(novo na v0.7)*: em Fé e propósito e no dashboard, um versículo
+  diferente por dia (415 selecionados, mais de um ano sem repetir), com dias
+  anteriores, copiar e "meditar e registrar" (abre o diário com a passagem
+  preenchida). Texto da Bíblia Livre (CC BY 4.0), com crédito visível.
 - **Finanças** *(novo na v0.4)*: entradas e despesas com categorias editáveis,
   resumo de saldo (com saldo inicial opcional), mês a mês com despesas por
   categoria, histórico de 6 meses, metas com valores guardados e retirados, e

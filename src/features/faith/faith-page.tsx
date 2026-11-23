@@ -15,6 +15,7 @@ import { EmptyState, useToast } from "@/components/ui/feedback";
 import { Input, Select } from "@/components/ui/form";
 import { Menu } from "@/components/ui/menu";
 import { AnswerDialog, EntryDialog, KindsDialog } from "./faith-forms";
+import { VerseOfDay } from "./verse-of-day";
 
 export function FaithPage() {
   const today = useToday();
@@ -27,7 +28,7 @@ function FaithContent({ today }: { today: string }) {
   const toast = useToast();
   const profile = data.profile!;
   const faith = data.faith;
-  const [entryDialog, setEntryDialog] = useState<{ entry?: FaithEntry; kind?: FaithKind } | null>(null);
+  const [entryDialog, setEntryDialog] = useState<{ entry?: FaithEntry; kind?: FaithKind; reference?: string; date?: string } | null>(null);
   const [kindsOpen, setKindsOpen] = useState(false);
   const [filter, setFilter] = useState<FaithKind | "all">("all");
   const [limit, setLimit] = useState(15);
@@ -89,6 +90,13 @@ function FaithContent({ today }: { today: string }) {
               Personalizar
             </Button>
           </>
+        }
+      />
+
+      <VerseOfDay
+        today={today}
+        onMeditate={(reference, date) =>
+          setEntryDialog({ kind: faith.kinds.includes("devocional") ? "devocional" : faith.kinds.includes("reflexao") ? "reflexao" : faith.kinds[0], reference, date })
         }
       />
 
@@ -191,7 +199,15 @@ function FaithContent({ today }: { today: string }) {
         )}
       </div>
 
-      <EntryDialog open={entryDialog !== null} onClose={() => setEntryDialog(null)} entry={entryDialog?.entry} initialKind={entryDialog?.kind} today={today} />
+      <EntryDialog
+        open={entryDialog !== null}
+        onClose={() => setEntryDialog(null)}
+        entry={entryDialog?.entry}
+        initialKind={entryDialog?.kind}
+        initialReference={entryDialog?.reference}
+        initialDate={entryDialog?.date}
+        today={today}
+      />
       <KindsDialog open={kindsOpen} onClose={() => setKindsOpen(false)} />
       <AnswerDialog prayer={answering} onClose={() => setAnswering(null)} today={today} />
     </>

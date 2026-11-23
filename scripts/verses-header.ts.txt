@@ -1,0 +1,31 @@
+/**
+ * Versículos do dia — FORGE.
+ *
+ * Fonte: Bíblia Livre (2018), atualização em português do Brasil da tradução de
+ * João Ferreira de Almeida (1819, Textus Receptus). © 2018 Diego Santos, Mario Sérgio
+ * e Marco Teles. Licença Creative Commons Atribuição 4.0 Brasil (CC BY 4.0).
+ * Texto obtido do eBible.org (porbr2018) e conferido com a página oficial.
+ *
+ * Adaptações (permitidas pela licença): seleção de versículos; pontuação final
+ * ajustada para leitura isolada; remoção de "(Selá)", notas musicais, títulos de
+ * estrofe do Salmo 119 e aspas sem par; maiúscula inicial. Erros de digitação do
+ * texto-fonte corrigidos: Salmos 34:18 ("sava" → "salva") e 2 Timóteo 2:15
+ * ("Deuscomo" → "Deus como"). Nenhuma outra palavra foi alterada.
+ *
+ * Arquivo gerado por scripts/build-verses.py. A ordem é embaralhada de forma fixa
+ * para alternar livros e temas dia após dia.
+ */
+
+export interface Verse {
+  ref: string;
+  text: string;
+}
+
+export const VERSES_SOURCE = {
+  name: "Bíblia Livre",
+  credit: "© 2018 Diego Santos, Mario Sérgio e Marco Teles",
+  license: "CC BY 4.0",
+  url: "https://ebible.org/porbr2018/",
+};
+
+export const VERSES: Verse[] = [

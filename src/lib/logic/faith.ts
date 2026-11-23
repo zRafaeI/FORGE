@@ -1,4 +1,7 @@
 import type { DateKey, FaithData, FaithEntry, FaithKind } from "@/lib/domain/types";
+import { VERSES, type Verse } from "@/lib/content/verses";
+import { diffDays } from "./dates";
+
 
 export const FAITH_KIND_META: Record<FaithKind, { label: string; prompt: string; placeholder: string; reference?: string }> = {
   devocional: {
@@ -48,3 +51,15 @@ export function lastEntryDate(f: FaithData): DateKey | null {
 }
 
 export const entriesOn = (f: FaithData, date: DateKey) => f.entries.filter((e) => e.date === date);
+
+/* ---------- Versículo do dia ---------- */
+
+
+const VERSE_EPOCH: DateKey = "2026-01-01";
+
+/** Versículo do dia: o mesmo o dia inteiro, em qualquer dispositivo; muda à meia-noite. */
+export function verseFor(date: DateKey): Verse {
+  const n = VERSES.length;
+  const i = ((diffDays(VERSE_EPOCH, date) % n) + n) % n;
+  return VERSES[i];
+}

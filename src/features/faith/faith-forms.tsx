@@ -20,12 +20,17 @@ export function EntryDialog({
   onClose,
   entry,
   initialKind,
+  initialReference,
+  initialDate,
   today,
 }: {
   open: boolean;
   onClose: () => void;
   entry?: FaithEntry;
   initialKind?: FaithKind;
+  /** Passagem já preenchida (ex.: vinda do versículo do dia). */
+  initialReference?: string;
+  initialDate?: string;
   today: string;
 }) {
   const { data, update } = useForge();
@@ -40,13 +45,13 @@ export function EntryDialog({
   useEffect(() => {
     if (!open) return;
     setKind(entry?.kind ?? initialKind ?? data.faith.kinds[0] ?? "devocional");
-    setDate(entry?.date ?? today);
-    setReference(entry?.reference ?? "");
+    setDate(entry?.date ?? initialDate ?? today);
+    setReference(entry?.reference ?? initialReference ?? "");
     setText(entry?.text ?? "");
     setItems(entry?.items?.length ? [...entry.items, ""] : ["", "", ""]);
     setErrors({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, entry?.id, initialKind]);
+  }, [open, entry?.id, initialKind, initialReference]);
 
   const meta = FAITH_KIND_META[kind];
   const kinds = Array.from(new Set([...data.faith.kinds, ...(entry ? [entry.kind] : [])]));
@@ -143,7 +148,7 @@ export function EntryDialog({
         )}
         <Field label={kind === "gratidao" ? "Comentário" : "Anotações"} error={errors.text}>
           {(p) => (
-            <Textarea {...p} autoFocus={kind !== "gratidao" && !meta.reference} className="min-h-32" placeholder={meta.placeholder} value={text} onChange={(e) => setText(e.target.value)} />
+            <Textarea {...p} autoFocus={kind !== "gratidao" && (!meta.reference || !!initialReference)} className="min-h-32" placeholder={meta.placeholder} value={text} onChange={(e) => setText(e.target.value)} />
           )}
         </Field>
         <button type="submit" hidden />

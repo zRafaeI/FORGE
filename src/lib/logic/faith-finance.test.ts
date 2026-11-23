@@ -128,3 +128,27 @@ describe("migração v3 → v4", () => {
     });
   });
 });
+
+describe("versículo do dia", () => {
+  it("é o mesmo no dia todo, muda no dia seguinte e percorre a lista sem repetir", async () => {
+    const { verseFor } = await import("./faith");
+    const { VERSES } = await import("@/lib/content/verses");
+    const { addDays } = await import("./dates");
+    expect(verseFor("2026-11-23")).toBe(verseFor("2026-11-23"));
+    expect(verseFor("2026-11-24")).not.toBe(verseFor("2026-11-23"));
+    const seen = new Set<string>();
+    for (let i = 0; i < VERSES.length; i++) seen.add(verseFor(addDays("2026-01-01", i)).ref);
+    expect(seen.size).toBe(VERSES.length);
+    expect(verseFor("2025-06-01").text.length).toBeGreaterThan(0); // datas antes da referência
+  });
+  it("todos os versículos têm referência e texto bem formados", async () => {
+    const { VERSES } = await import("@/lib/content/verses");
+    expect(VERSES.length).toBeGreaterThanOrEqual(366);
+    for (const v of VERSES) {
+      expect(v.ref).toMatch(/^[1-3]? ?[A-ZÀ-Ú][a-zà-ú]+ \d+:\d+(-\d+)?$/);
+      expect(v.text).toMatch(/^[A-ZÀ-Ú]/);
+      expect(v.text).toMatch(/[.!?”]$/);
+      expect(v.text).not.toMatch(/\(Selá\)|\s[,;:.]|Deuscomo|\bsava\b|^[A-Z][a-z]+ ?:/);
+    }
+  });
+});

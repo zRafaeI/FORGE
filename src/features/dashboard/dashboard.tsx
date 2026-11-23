@@ -12,7 +12,7 @@ import { formatKm, trainingWeeks, weekStart } from "@/lib/logic/training";
 import { formatHours, minutesIn } from "@/lib/logic/study";
 import { dayPlan, formatMl, waterOn } from "@/lib/logic/nutrition";
 import { addDays, formatShortDate } from "@/lib/logic/dates";
-import { entriesOn, FAITH_KIND_META, lastEntryDate } from "@/lib/logic/faith";
+import { entriesOn, FAITH_KIND_META, lastEntryDate, verseFor } from "@/lib/logic/faith";
 import { aggregate, categorySummary, indexCheckIns, itemsForDay, progressOf, progressRange } from "@/lib/logic/stats";
 import { Button } from "@/components/ui/button";
 import { CheckButton } from "@/components/ui/check";
@@ -275,7 +275,7 @@ function DashboardContent({ now }: { now: Date }) {
             const showStudy = a.id === "estudos" && hasStudy;
             const showNutrition = a.id === "alimentacao" && hasNutrition;
             const showFaith = a.id === "fe" && hasFaith;
-            const moduleLinked = showTraining || showStudy || showNutrition || showFaith;
+            const moduleLinked = showTraining || showStudy || showNutrition || showFaith || a.id === "fe";
             return (
               <div key={a.id} className="flex flex-col bg-surface p-5">
                 <div className="flex items-center gap-2.5 text-sm">
@@ -314,6 +314,13 @@ function DashboardContent({ now }: { now: Date }) {
                         ? `${plannedDone} de ${mealsToday.slots.length} refeições planejadas`
                         : `${mealsToday.extras.length} ${mealsToday.extras.length === 1 ? "refeição registrada" : "refeições registradas"}`}
                     </span>
+                  </Link>
+                )}
+                {a.id === "fe" && (
+                  <Link href="/fe" className="group mt-5 block">
+                    <span className="block text-xs text-faint">Versículo do dia</span>
+                    <span className="mt-1.5 line-clamp-4 block text-[13px] leading-relaxed text-ink group-hover:text-accent">{verseFor(today).text}</span>
+                    <span className="mt-1 block text-xs text-muted">{verseFor(today).ref}</span>
                   </Link>
                 )}
                 {showFaith && (
