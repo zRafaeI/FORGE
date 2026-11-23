@@ -11,6 +11,7 @@ import { OnboardingFlow } from "@/features/onboarding/onboarding-flow";
 import { cn } from "@/components/ui/cn";
 import { NAV } from "./nav";
 import { Wordmark } from "./logo";
+import { TimerIndicator } from "@/features/study/timer-indicator";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { data, status, error, dismissError } = useForge();
@@ -65,11 +66,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             </span>
           ))}
         </nav>
+        <div className="mt-4">
+          <TimerIndicator />
+        </div>
         <Link
           href="/configuracoes"
           aria-current={isActive("/configuracoes") ? "page" : undefined}
           className={cn(
-            "mt-4 flex h-10 items-center gap-3 rounded-md px-2.5 text-sm transition-colors",
+            "mt-2 flex h-10 items-center gap-3 rounded-md px-2.5 text-sm transition-colors",
             isActive("/configuracoes") ? "bg-surface-2 text-ink" : "text-muted hover:bg-surface hover:text-ink",
           )}
         >
@@ -83,10 +87,11 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="min-w-0">
         {/* Topo — mobile */}
-        <header className="sticky top-0 z-30 flex h-14 items-center border-b border-line-soft bg-bg/85 px-5 backdrop-blur-md lg:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line-soft bg-bg/85 px-5 backdrop-blur-md lg:hidden">
           <Link href="/" aria-label="FORGE, ir para o dashboard">
             <Wordmark />
           </Link>
+          <TimerIndicator compact />
         </header>
 
         {error && (

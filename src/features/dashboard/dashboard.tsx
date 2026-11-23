@@ -8,7 +8,10 @@ import { useForge } from "@/lib/store/forge-store";
 import { useNow } from "@/lib/store/use-clock";
 import { formatLongDate, greetingFor, nowMinutes, timeToMinutes, toDateKey, weekday, WEEKDAY_INITIAL } from "@/lib/logic/dates";
 import { reflectionFor } from "@/lib/logic/reflections";
-import { formatKm, trainingWeeks } from "@/lib/logic/training";
+import { formatKm, trainingWeeks, weekStart } from "@/lib/logic/training";
+import { formatHours, minutesIn } from "@/lib/logic/study";
+import { dayPlan, formatMl, waterOn } from "@/lib/logic/nutrition";
+import { addDays } from "@/lib/logic/dates";
 import { aggregate, categorySummary, indexCheckIns, itemsForDay, progressOf, progressRange } from "@/lib/logic/stats";
 import { Button } from "@/components/ui/button";
 import { CheckButton } from "@/components/ui/check";
@@ -44,6 +47,13 @@ function DashboardContent({ now }: { now: Date }) {
   const weekAgg = aggregate(week);
   const trainingWeek = useMemo(() => trainingWeeks(data.training, today, 1)[0], [data.training, today]);
   const hasTraining = data.training.runs.length + data.training.workouts.length + data.training.restDays.length > 0;
+  const hasStudy = data.study.subjects.length > 0;
+  const studyToday = minutesIn(data.study.sessions, today, today);
+  const studyWeek = minutesIn(data.study.sessions, weekStart(today), addDays(weekStart(today), 6));
+  const hasNutrition = data.nutrition.plan.length > 0 || data.nutrition.meals.length > 0 || data.nutrition.water.length > 0;
+  const waterToday = waterOn(data.nutrition, today);
+  const mealsToday = dayPlan(data.nutrition, today);
+  const plannedDone = mealsToday.slots.filter((x) => x.log).length;
 
   const areas: { id: CategoryId; icon: LucideIcon; label: string }[] = [
     { id: "treino", icon: Dumbbell, label: "Treinamento" },
@@ -257,6 +267,9 @@ function DashboardContent({ now }: { now: Date }) {
           {areas.map((a) => {
             const s = categorySummary(data, a.id, today);
             const showTraining = a.id === "treino" && hasTraining;
+            const showStudy = a.id === "estudos" && hasStudy;
+            const showNutrition = a.id === "alimentacao" && hasNutrition;
+            const moduleLinked = showTraining || showStudy || showNutrition;
             return (
               <div key={a.id} className="flex flex-col bg-surface p-5">
                 <div className="flex items-center gap-2.5 text-sm">
@@ -273,6 +286,27 @@ function DashboardContent({ now }: { now: Date }) {
                     <span className="block text-xs text-muted">
                       {trainingWeek.strengthCount} {trainingWeek.strengthCount === 1 ? "sessão" : "sessões"} de musculação
                       {trainingWeek.restDays > 0 && `, ${trainingWeek.restDays} ${trainingWeek.restDays === 1 ? "descanso" : "descansos"}`}
+                    </span>
+                  </Link>
+                )}
+                {showStudy && (
+                  <Link href="/estudos" className="mt-5 block rounded-md border border-line-soft bg-bg/40 px-3.5 py-3 hover:border-line">
+                    <span className="block text-xs text-faint">Tempo de estudo</span>
+                    <span className="num mt-1 block text-sm">{studyToday ? `${formatHours(studyToday)} hoje` : "Nada hoje ainda"}</span>
+                    <span className="num block text-xs text-muted">{formatHours(studyWeek)} nesta semana</span>
+                  </Link>
+                )}
+                {showNutrition && (
+                  <Link href="/alimentacao" className="mt-5 block rounded-md border border-line-soft bg-bg/40 px-3.5 py-3 hover:border-line">
+                    <span className="block text-xs text-faint">Hoje</span>
+                    <span className="num mt-1 block text-sm">
+                      {formatMl(waterToday)} de água
+                      {data.nutrition.waterGoalMl ? <span className="text-faint"> de {formatMl(data.nutrition.waterGoalMl)}</span> : null}
+                    </span>
+                    <span className="block text-xs text-muted">
+                      {mealsToday.slots.length
+                        ? `${plannedDone} de ${mealsToday.slots.length} refeições planejadas`
+                        : `${mealsToday.extras.length} ${mealsToday.extras.length === 1 ? "refeição registrada" : "refeições registradas"}`}
                     </span>
                   </Link>
                 )}
@@ -300,7 +334,7 @@ function DashboardContent({ now }: { now: Date }) {
                       </ul>
                     )}
                   </>
-                ) : showTraining ? null : (
+                ) : moduleLinked ? null : (
                   <div className="mt-4 flex flex-1 flex-col items-start justify-between gap-4">
                     <p className="text-[13px] leading-relaxed text-faint">Nada desta área na sua rotina ainda.</p>
                     <Button size="sm" variant="secondary" icon={<Plus size={14} />} onClick={() => actions.newHabit(a.id)}>
@@ -313,9 +347,8 @@ function DashboardContent({ now }: { now: Date }) {
           })}
         </div>
         <p className="mt-3 text-xs text-faint">
-          Resumos baseados nos seus hábitos e atividades de cada categoria
-          {hasTraining ? " e nos seus registros de treino" : ""}. Registros detalhados de refeições e estudo chegam com
-          os módulos dedicados.
+          Resumos baseados nos seus hábitos e atividades de cada categoria e nos registros de treino, estudo e
+          alimentação.
         </p>
       </section>
 

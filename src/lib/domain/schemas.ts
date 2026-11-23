@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CATEGORY_IDS, PRIORITIES } from "./types";
+import { BOOK_STATUSES, CATEGORY_IDS, PRIORITIES } from "./types";
 
 const time = z
   .string()
@@ -173,15 +173,136 @@ const forgeDataV2Shape = {
   training: trainingSchema,
 };
 
+/* ---------- Estudos ---------- */
+
+const name60 = (msg: string) => z.string().trim().min(2, msg).max(60, "Use no máximo 60 caracteres.");
+
+export const subjectInputSchema = z.object({
+  name: name60("Dê um nome à matéria, ex.: Inglês."),
+  weeklyGoalMin: z
+    .number({ error: "Use apenas números." })
+    .int("Use minutos inteiros.")
+    .min(10, "A meta mínima é de 10 minutos por semana.")
+    .max(6000, "Meta acima de 100 horas por semana — confira o valor.")
+    .optional(),
+});
+export type SubjectInput = z.infer<typeof subjectInputSchema>;
+
+export const studySessionInputSchema = z.object({
+  subjectId: z.string().min(1, "Escolha a matéria."),
+  date: dateKey,
+  minutes: z
+    .number({ error: "Informe a duração." })
+    .int("Use minutos inteiros.")
+    .min(1, "A sessão precisa de pelo menos 1 minuto.")
+    .max(960, "Sessão acima de 16 horas — confira o valor."),
+  notes: optionalNote,
+  source: z.enum(["timer", "manual"]),
+});
+export type StudySessionInput = z.infer<typeof studySessionInputSchema>;
+
+const pages = z.number({ error: "Use apenas números." }).int("Use páginas inteiras.").min(0, "Valor inválido.").max(20000, "Confira o número de páginas.");
+
+export const bookInputSchema = z
+  .object({
+    title: z.string().trim().min(1, "Informe o título.").max(120, "Use no máximo 120 caracteres."),
+    author: z.string().trim().max(80, "Use no máximo 80 caracteres.").optional(),
+    totalPages: pages.min(1, "O livro precisa ter pelo menos 1 página.").optional(),
+    currentPage: pages,
+    status: z.enum(BOOK_STATUSES),
+  })
+  .refine((b) => b.totalPages === undefined || b.currentPage <= b.totalPages, {
+    message: "A página atual não pode passar do total.",
+    path: ["currentPage"],
+  });
+export type BookInput = z.infer<typeof bookInputSchema>;
+
+const studySchema = z.object({
+  subjects: z.array(subjectInputSchema.extend({ id: z.string(), createdAt: z.string() })),
+  sessions: z.array(studySessionInputSchema.extend({ id: z.string(), createdAt: z.string() })),
+  books: z.array(
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      author: z.string().optional(),
+      totalPages: z.number().optional(),
+      currentPage: z.number(),
+      status: z.enum(BOOK_STATUSES),
+      startedOn: dateKey.optional(),
+      finishedOn: dateKey.optional(),
+      createdAt: z.string(),
+    }),
+  ),
+  readingLogs: z.array(
+    z.object({ id: z.string(), bookId: z.string(), date: dateKey, fromPage: z.number(), toPage: z.number(), createdAt: z.string() }),
+  ),
+  timer: z.object({ subjectId: z.string(), startedAt: z.string().nullable(), elapsedMs: z.number() }).nullable(),
+});
+
+/* ---------- Alimentação ---------- */
+
+export const plannedMealInputSchema = z.object({
+  name: name60("Dê um nome à refeição, ex.: Almoço."),
+  time,
+});
+export type PlannedMealInput = z.infer<typeof plannedMealInputSchema>;
+
+export const mealInputSchema = z.object({
+  date: dateKey,
+  time: time.optional(),
+  name: name60("Dê um nome à refeição, ex.: Almoço."),
+  description: z.string().trim().max(300, "Use no máximo 300 caracteres.").optional(),
+  plannedMealId: z.string().optional(),
+});
+export type MealInput = z.infer<typeof mealInputSchema>;
+
+export const waterAmountSchema = z
+  .number({ error: "Use apenas números." })
+  .int("Use mililitros inteiros.")
+  .min(10, "Mínimo de 10 ml.")
+  .max(3000, "Máximo de 3.000 ml por registro.");
+
+export const waterGoalSchema = z
+  .number({ error: "Use apenas números." })
+  .int("Use mililitros inteiros.")
+  .min(250, "Use pelo menos 250 ml.")
+  .max(10000, "Meta acima de 10 litros — confira o valor.");
+
+export const weightSchema = z
+  .number({ error: "Use apenas números, ex.: 72,4." })
+  .min(20, "Confira o valor.")
+  .max(400, "Confira o valor.");
+
+const nutritionSchema = z.object({
+  plan: z.array(plannedMealInputSchema.extend({ id: z.string() })),
+  meals: z.array(mealInputSchema.extend({ id: z.string(), createdAt: z.string() })),
+  water: z.array(z.object({ id: z.string(), date: dateKey, ml: z.number(), at: z.string() })),
+  waterGoalMl: z.number().optional(),
+  weightEnabled: z.boolean(),
+  weights: z.array(z.object({ id: z.string(), date: dateKey, kg: z.number(), createdAt: z.string() })),
+});
+
+/* ---------- Versões do documento ---------- */
+
+const emptyTraining = () => ({ runs: [], workouts: [], restDays: [] });
+const emptyStudy = () => ({ subjects: [], sessions: [], books: [], readingLogs: [], timer: null });
+const emptyNutrition = () => ({ plan: [], meals: [], water: [], weightEnabled: false, weights: [] });
+
+const forgeDataV3 = z.object({ ...forgeDataV2Shape, schemaVersion: z.literal(3), study: studySchema, nutrition: nutritionSchema });
 const forgeDataV2 = z.object(forgeDataV2Shape);
 const forgeDataV1 = z.object({ ...forgeDataV2Shape, schemaVersion: z.literal(1), training: z.undefined().optional() });
 
-/** Valida qualquer versão conhecida e devolve sempre a versão atual. */
-export const forgeDataSchema = z.union([forgeDataV2, forgeDataV1]).transform((d) =>
-  d.schemaVersion === 2
-    ? d
-    : { ...d, schemaVersion: 2 as const, training: { runs: [], workouts: [], restDays: [] } },
-);
+/** Valida qualquer versão conhecida e devolve sempre a versão atual (3). */
+export const forgeDataSchema = z.union([forgeDataV3, forgeDataV2, forgeDataV1]).transform((d) => {
+  if (d.schemaVersion === 3) return d;
+  return {
+    ...d,
+    schemaVersion: 3 as const,
+    training: d.schemaVersion === 2 ? d.training : emptyTraining(),
+    study: emptyStudy(),
+    nutrition: emptyNutrition(),
+  };
+});
 
 /** Converte erros do Zod em um mapa campo → mensagem para formulários. */
 export function fieldErrors(error: z.ZodError): Record<string, string> {

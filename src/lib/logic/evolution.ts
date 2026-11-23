@@ -121,7 +121,10 @@ export function milestones(data: ForgeData): Milestone[] {
     ...done.map((c) => c.date),
     ...data.training.runs.map((r) => r.date),
     ...data.training.workouts.map((w) => w.date),
+    ...data.study.sessions.map((x) => x.date),
   ]).size;
+  const studyMin = data.study.sessions.reduce((t, x) => t + x.minutes, 0);
+  const booksRead = data.study.books.filter((b) => b.status === "lido").length;
   const rests = data.checkIns.filter((c) => c.status === "rest").length + data.training.restDays.length;
   const km = data.training.runs.reduce((s, r) => s + r.distanceKm, 0);
   const sessions = data.training.workouts.length;
@@ -145,5 +148,8 @@ export function milestones(data: ForgeData): Milestone[] {
     m("km100", "Cem quilômetros", "Acumular 100 km de corrida.", km, 100),
     m("strength10", "Dez sessões de força", "Registrar 10 treinos de musculação.", sessions, 10),
     m("ton", "Uma tonelada levantada", "Somar 1.000 kg de volume em musculação.", volume, 1000),
+    m("study10", "Dez horas de estudo", "Somar 10 horas em sessões de estudo.", studyMin, 600),
+    m("study100", "Cem horas de estudo", "Somar 100 horas em sessões de estudo.", studyMin, 6000),
+    m("book1", "Primeiro livro concluído", "Terminar um livro da sua lista.", booksRead, 1),
   ];
 }

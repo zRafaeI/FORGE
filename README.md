@@ -24,7 +24,7 @@ Outros comandos:
 Não é preciso configurar nada: sem variáveis de ambiente, o FORGE salva tudo no
 navegador (localStorage). Veja `.env.example` para a futura integração com Supabase.
 
-## O que está pronto (v0.2)
+## O que está pronto (v0.3)
 
 - **Onboarding** em 4 etapas: nome, horários de acordar/dormir, áreas de foco e
   escolha dos primeiros hábitos (sugestões por área + hábitos personalizados).
@@ -50,6 +50,15 @@ navegador (localStorage). Veja `.env.example` para a futura integração com Sup
   anterior, calendário mensal de conclusão (com marcação de dias de treino),
   taxa semanal das últimas 12 semanas, constância por hábito e conquistas
   que acumulam e nunca são perdidas.
+- **Estudos** *(novo na v0.3)*: matérias com meta semanal opcional, temporizador
+  de sessões (pausar, retomar; continua contando mesmo se a página for fechada e
+  aparece em todas as telas enquanto roda), registro manual, horas por semana,
+  dias seguidos, histórico de sessões, lista de livros (quero ler, lendo, lidos)
+  com registro da página em que parou.
+- **Alimentação** *(novo na v0.3)*: planejamento diário de refeições por horário,
+  registro do que comeu (sem calorias, sem dietas), água com botões rápidos e meta
+  definida por você, histórico de 7 dias e acompanhamento de peso **opcional**
+  (desligado por padrão).
 - **Configurações**: editar perfil e ritmo, ativar/desativar a área espiritual,
   exportar/importar backup em JSON, apagar todos os dados.
 - Responsivo (sidebar no desktop, navegação inferior no celular), acessível por
@@ -58,7 +67,7 @@ navegador (localStorage). Veja `.env.example` para a futura integração com Sup
 ## O que ainda falta
 
 Seções sinalizadas como "chegando nas próximas versões" no menu:
-Alimentação, Estudos, Fé e propósito e Finanças.
+Fé e propósito e Finanças.
 Também: sincronização com Supabase e autenticação.
 
 Detalhes de arquitetura e decisões: [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).

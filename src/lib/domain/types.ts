@@ -134,7 +134,110 @@ export interface TrainingData {
   restDays: RestDay[];
 }
 
-export const SCHEMA_VERSION = 2 as const;
+/* ---------- Estudos ---------- */
+
+export interface Subject {
+  id: string;
+  name: string;
+  /** Meta semanal em minutos, definida pelo usuário. */
+  weeklyGoalMin?: number;
+  createdAt: string;
+}
+
+export interface StudySession {
+  id: string;
+  subjectId: string;
+  date: DateKey;
+  minutes: number;
+  notes?: string;
+  source: "timer" | "manual";
+  createdAt: string;
+}
+
+/** Temporizador em andamento. startedAt nulo = pausado. Persistido para sobreviver a recarregamentos. */
+export interface StudyTimer {
+  subjectId: string;
+  startedAt: string | null;
+  elapsedMs: number;
+}
+
+export const BOOK_STATUSES = ["quero-ler", "lendo", "lido"] as const;
+export type BookStatus = (typeof BOOK_STATUSES)[number];
+
+export interface Book {
+  id: string;
+  title: string;
+  author?: string;
+  totalPages?: number;
+  currentPage: number;
+  status: BookStatus;
+  startedOn?: DateKey;
+  finishedOn?: DateKey;
+  createdAt: string;
+}
+
+export interface ReadingLog {
+  id: string;
+  bookId: string;
+  date: DateKey;
+  fromPage: number;
+  toPage: number;
+  createdAt: string;
+}
+
+export interface StudyData {
+  subjects: Subject[];
+  sessions: StudySession[];
+  books: Book[];
+  readingLogs: ReadingLog[];
+  timer: StudyTimer | null;
+}
+
+/* ---------- Alimentação ---------- */
+
+/** Refeição do planejamento diário (ex.: Café da manhã às 07:00). */
+export interface PlannedMeal {
+  id: string;
+  name: string;
+  time: TimeOfDay;
+}
+
+export interface MealLog {
+  id: string;
+  date: DateKey;
+  time?: TimeOfDay;
+  name: string;
+  description?: string;
+  plannedMealId?: string;
+  createdAt: string;
+}
+
+export interface WaterLog {
+  id: string;
+  date: DateKey;
+  ml: number;
+  at: string;
+}
+
+export interface WeightLog {
+  id: string;
+  date: DateKey;
+  kg: number;
+  createdAt: string;
+}
+
+export interface NutritionData {
+  plan: PlannedMeal[];
+  meals: MealLog[];
+  water: WaterLog[];
+  /** Meta diária de água definida pelo próprio usuário. */
+  waterGoalMl?: number;
+  /** Acompanhamento de peso é opcional e desligado por padrão. */
+  weightEnabled: boolean;
+  weights: WeightLog[];
+}
+
+export const SCHEMA_VERSION = 3 as const;
 
 export interface ForgeData {
   schemaVersion: typeof SCHEMA_VERSION;
@@ -143,7 +246,12 @@ export interface ForgeData {
   habits: Habit[];
   checkIns: CheckIn[];
   training: TrainingData;
+  study: StudyData;
+  nutrition: NutritionData;
 }
+
+export const EMPTY_STUDY: StudyData = { subjects: [], sessions: [], books: [], readingLogs: [], timer: null };
+export const EMPTY_NUTRITION: NutritionData = { plan: [], meals: [], water: [], weightEnabled: false, weights: [] };
 
 export const EMPTY_DATA: ForgeData = {
   schemaVersion: SCHEMA_VERSION,
@@ -152,4 +260,6 @@ export const EMPTY_DATA: ForgeData = {
   habits: [],
   checkIns: [],
   training: { runs: [], workouts: [], restDays: [] },
+  study: EMPTY_STUDY,
+  nutrition: EMPTY_NUTRITION,
 };

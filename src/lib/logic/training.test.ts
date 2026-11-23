@@ -93,13 +93,13 @@ describe("semanas e recordes", () => {
 });
 
 describe("migração", () => {
-  it("backup v1 vira v2 com treinamento vazio", () => {
+  it("backup v1 vira a versão atual com módulos vazios", () => {
     const v1 = { schemaVersion: 1, profile: null, activities: [], habits: [], checkIns: [] };
     const r = forgeDataSchema.safeParse(v1);
     expect(r.success).toBe(true);
-    expect(r.data).toMatchObject({ schemaVersion: 2, training: { runs: [], workouts: [], restDays: [] } });
+    expect(r.data).toMatchObject({ schemaVersion: 3, training: { runs: [], workouts: [], restDays: [] }, study: { timer: null } });
   });
-  it("v2 passa intacto", () => {
+  it("versão atual passa intacta", () => {
     const d = addRun(EMPTY_DATA, { date: "2026-11-17", distanceKm: 5, durationSec: 1700 });
     const r = forgeDataSchema.safeParse(JSON.parse(JSON.stringify(d)));
     expect(r.success && r.data.training.runs).toHaveLength(1);
