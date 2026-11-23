@@ -1,23 +1,20 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarClock, ChevronLeft, ChevronRight, Droplet, Pencil, Plus, Scale, Trash2, Undo2, UtensilsCrossed } from "lucide-react";
+import { CalendarClock, ChevronLeft, ChevronRight, Droplet, Pencil, Plus, Scale, Trash2, UtensilsCrossed } from "lucide-react";
 import type { MealLog } from "@/lib/domain/types";
-import { waterAmountSchema, waterGoalSchema, weightSchema } from "@/lib/domain/schemas";
+import { weightSchema } from "@/lib/domain/schemas";
 import {
-  addWater,
   addWeight,
   deleteMeal,
-  deleteWater,
   deleteWeight,
   restoreMeal,
-  setWaterGoal,
   setWeightEnabled,
 } from "@/lib/store/actions";
 import { useForge } from "@/lib/store/forge-store";
 import { useToday } from "@/lib/store/use-clock";
 import { addDays, formatLongDate, formatShortDate } from "@/lib/logic/dates";
-import { dayPlan, formatMl, formatWeight, nutritionHistory, waterOn, weightSeries } from "@/lib/logic/nutrition";
+import { dayPlan, formatMl, formatWeight, nutritionHistory, weightSeries } from "@/lib/logic/nutrition";
 import { PageHeader, SectionTitle } from "@/components/layout/page-header";
 import { Button, IconButton } from "@/components/ui/button";
 import { EmptyState, useToast } from "@/components/ui/feedback";
@@ -25,9 +22,9 @@ import { Input } from "@/components/ui/form";
 import { LineChart } from "@/components/ui/line-chart";
 import { Menu } from "@/components/ui/menu";
 import { decimalToInput, parseDecimal } from "@/components/ui/number";
-import { Bar } from "@/components/ui/progress";
 import { cn } from "@/components/ui/cn";
 import { MealFormDialog, PlanDialog, type MealPrefill } from "./nutrition-forms";
+import { WaterCard } from "./water-card";
 
 export function NutritionPage() {
   const today = useToday();
@@ -195,122 +192,6 @@ function NutritionContent({ today }: { today: string }) {
       <MealFormDialog open={mealDialog !== null} onClose={() => setMealDialog(null)} meal={mealDialog?.meal} prefill={mealDialog?.prefill} today={today} />
       <PlanDialog open={planOpen} onClose={() => setPlanOpen(false)} />
     </>
-  );
-}
-
-/* ---------- Água ---------- */
-
-function WaterCard({ date, today }: { date: string; today: string }) {
-  const { data, update } = useForge();
-  const toast = useToast();
-  const n = data.nutrition;
-  const total = waterOn(n, date);
-  const entries = n.water.filter((w) => w.date === date).sort((a, b) => b.at.localeCompare(a.at));
-  const [custom, setCustom] = useState("");
-  const [goalDraft, setGoalDraft] = useState<string | null>(null);
-  const [error, setError] = useState<string>();
-
-  function add(ml: number) {
-    update((d) => addWater(d, date, ml));
-    setError(undefined);
-  }
-
-  function addCustom(e: React.FormEvent) {
-    e.preventDefault();
-    const r = waterAmountSchema.safeParse(custom.trim() ? Number(custom.trim()) : undefined);
-    if (!r.success) return setError(r.error.issues[0].message);
-    add(r.data);
-    setCustom("");
-  }
-
-  function saveGoal(e: React.FormEvent) {
-    e.preventDefault();
-    if (goalDraft === null) return;
-    if (!goalDraft.trim()) {
-      update((d) => setWaterGoal(d, undefined));
-      setGoalDraft(null);
-      return;
-    }
-    const liters = parseDecimal(goalDraft);
-    const ml = liters === undefined || Number.isNaN(liters) ? Number.NaN : Math.round(liters * 1000);
-    const r = waterGoalSchema.safeParse(ml);
-    if (!r.success) return setError(r.error.issues[0].message.replace("250 ml", "0,25 L"));
-    update((d) => setWaterGoal(d, r.data));
-    toast({ message: "Meta de água salva." });
-    setGoalDraft(null);
-    setError(undefined);
-  }
-
-  return (
-    <section className="surface rounded-lg p-5" aria-labelledby="water-title">
-      <div className="flex items-center gap-2.5">
-        <Droplet size={16} className="text-accent" />
-        <h2 id="water-title" className="type-title text-[15px]">
-          Água {date === today ? "hoje" : "no dia"}
-        </h2>
-      </div>
-      <p className="type-display num mt-4 text-[2.2rem]" aria-live="polite">
-        {formatMl(total)}
-        {n.waterGoalMl && <span className="text-[1rem] text-faint"> de {formatMl(n.waterGoalMl)}</span>}
-      </p>
-      {n.waterGoalMl && <Bar value={Math.min(total / n.waterGoalMl, 1)} className="mt-3" />}
-
-      <div className="mt-5 grid grid-cols-3 gap-2">
-        {[200, 300, 500].map((ml) => (
-          <Button key={ml} size="sm" onClick={() => add(ml)} aria-label={`Adicionar ${ml} ml`}>
-            +{ml} ml
-          </Button>
-        ))}
-      </div>
-      <form onSubmit={addCustom} className="mt-2 flex gap-2" noValidate>
-        <Input aria-label="Outra quantidade em ml" inputMode="numeric" placeholder="Outra quantidade (ml)" value={custom} onChange={(e) => setCustom(e.target.value)} />
-        <Button type="submit" size="md">
-          Adicionar
-        </Button>
-      </form>
-      {error && (
-        <p role="alert" className="mt-2 text-xs text-warn">
-          {error}
-        </p>
-      )}
-
-      {entries.length > 0 && (
-        <ul className="mt-4 flex flex-col gap-1 border-t border-line-soft pt-3">
-          {entries.slice(0, 4).map((w) => (
-            <li key={w.id} className="flex items-center justify-between text-xs text-muted">
-              <span className="num flex gap-3">
-                <span className="text-faint">{new Date(w.at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
-                {formatMl(w.ml)}
-              </span>
-              <IconButton label={`Desfazer registro de ${formatMl(w.ml)}`} className="size-7" onClick={() => update((d) => deleteWater(d, w.id))}>
-                <Undo2 size={13} />
-              </IconButton>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="mt-4 border-t border-line-soft pt-3">
-        {goalDraft === null ? (
-          <button type="button" className="text-xs text-faint hover:text-ink" onClick={() => setGoalDraft(n.waterGoalMl ? decimalToInput(n.waterGoalMl / 1000) : "")}>
-            {n.waterGoalMl ? "Alterar meta diária" : "Definir uma meta diária"}
-          </button>
-        ) : (
-          <form onSubmit={saveGoal} className="flex flex-col gap-2" noValidate>
-            <label htmlFor="water-goal" className="text-xs text-muted">
-              Meta diária em litros (deixe vazio para não usar meta)
-            </label>
-            <div className="flex gap-2">
-              <Input id="water-goal" autoFocus inputMode="decimal" placeholder="Ex.: 2" value={goalDraft} onChange={(e) => setGoalDraft(e.target.value)} />
-              <Button type="submit" variant="primary">
-                Salvar
-              </Button>
-            </div>
-            <p className="text-[11px] leading-relaxed text-faint">A quantidade ideal varia de pessoa para pessoa. Se tiver dúvida, converse com um profissional de saúde.</p>
-          </form>
-        )}
-      </div>
-    </section>
   );
 }
 

@@ -105,6 +105,14 @@ src/
     despesas dos últimos meses registrados. Os atalhos de 3 e 6 meses são
     referências informativas, não recomendação financeira.
 
+25. **Lembretes de água rodam no navegador** (`WaterReminderService`, montado em todas as
+    telas). A configuração é sincronizada com a conta; o horário do último lembrete é
+    por dispositivo (`forge:water-reminder:last`) e serve também para que duas abas
+    não avisem ao mesmo tempo. A decisão de lembrar é uma função pura
+    (`reminderState`): janela do dia, intervalo contado do último copo ou lembrete,
+    meta alcançada e "só abaixo do ritmo". Notificações com o app fechado exigem Web
+    Push com service worker e servidor — próxima etapa, junto com a publicação/PWA.
+
 ## Versões dos dados
 
 O documento salvo tem `schemaVersion`. A v0.2 introduziu a versão 2 (`training`), a
@@ -141,7 +149,7 @@ Passo a passo de configuração: [`SUPABASE.md`](SUPABASE.md). Estrutura do banc
 
 ## Testes
 
-`npm test` (61 testes) cobre datas, recorrência, validação, progresso, descanso, sequências,
+`npm test` (67 testes) cobre datas, recorrência, validação, progresso, descanso, sequências,
 edição/exclusão, o repositório local (incluindo recuperação de dados corrompidos),
 treinamento (ritmo, volume, progressão, semanas, recordes), evolução, estudos (temporizador, metas, leitura), alimentação (plano, água, peso)
 fé (diário, orações), finanças (valores, totais, metas, reserva) e as migrações

@@ -278,6 +278,9 @@ const nutritionSchema = z.object({
   meals: z.array(mealInputSchema.extend({ id: z.string(), createdAt: z.string() })),
   water: z.array(z.object({ id: z.string(), date: dateKey, ml: z.number(), at: z.string() })),
   waterGoalMl: z.number().optional(),
+  waterReminder: z
+    .object({ enabled: z.boolean(), intervalMin: z.number().int(), start: time, end: time, onlyWhenBehind: z.boolean() })
+    .optional(),
   weightEnabled: z.boolean(),
   weights: z.array(z.object({ id: z.string(), date: dateKey, kg: z.number(), createdAt: z.string() })),
 });

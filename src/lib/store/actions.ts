@@ -23,6 +23,7 @@ import type {
   Subject,
   WaterLog,
   WeightLog,
+  WaterReminder,
   FaithData,
   FaithEntry,
   FaithKind,
@@ -529,4 +530,8 @@ export function addContribution(data: ForgeData, goalId: string, date: DateKey, 
 
 export function setOpeningBalance(data: ForgeData, cents: number | undefined): ForgeData {
   return withFinance(data, (f) => ({ ...f, openingBalanceCents: cents }));
+}
+
+export function setWaterReminder(data: ForgeData, reminder: WaterReminder | undefined): ForgeData {
+  return withNutrition(data, (n) => ({ ...n, waterReminder: reminder }));
 }

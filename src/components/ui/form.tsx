@@ -126,3 +126,35 @@ export function Toggle({
     </button>
   );
 }
+
+/** Interruptor liga/desliga acessível (role="switch"). */
+export function Switch({ checked, onChange, label, description }: { checked: boolean; onChange: (v: boolean) => void; label: string; description?: string }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className="group flex w-full items-start justify-between gap-4 text-left"
+    >
+      <span>
+        <span className="block text-sm text-ink">{label}</span>
+        {description && <span className="mt-0.5 block text-xs leading-relaxed text-faint">{description}</span>}
+      </span>
+      <span
+        aria-hidden
+        className={cn(
+          "relative mt-0.5 inline-flex h-5 w-9 shrink-0 rounded-full border transition-colors",
+          checked ? "border-accent bg-accent" : "border-line bg-surface-3",
+        )}
+      >
+        <span
+          className={cn(
+            "absolute top-[1px] size-4 rounded-full transition-transform duration-200",
+            checked ? "translate-x-[17px] bg-bg" : "translate-x-[1px] bg-muted",
+          )}
+        />
+      </span>
+    </button>
+  );
+}

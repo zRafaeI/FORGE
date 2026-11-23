@@ -226,12 +226,25 @@ export interface WeightLog {
   createdAt: string;
 }
 
+export interface WaterReminder {
+  enabled: boolean;
+  /** Intervalo entre lembretes, em minutos. */
+  intervalMin: number;
+  /** Janela do dia em que pode lembrar. */
+  start: TimeOfDay;
+  end: TimeOfDay;
+  /** Só lembra quando o total estiver abaixo do ritmo esperado para a meta. */
+  onlyWhenBehind: boolean;
+}
+
 export interface NutritionData {
   plan: PlannedMeal[];
   meals: MealLog[];
   water: WaterLog[];
   /** Meta diária de água definida pelo próprio usuário. */
   waterGoalMl?: number;
+  /** Lembretes de água (opcionais). Ausente = desligados. */
+  waterReminder?: WaterReminder;
   /** Acompanhamento de peso é opcional e desligado por padrão. */
   weightEnabled: boolean;
   weights: WeightLog[];

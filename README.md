@@ -28,7 +28,7 @@ Outros comandos:
   [`docs/SUPABASE.md`](docs/SUPABASE.md).
 - **Sem Supabase** (sem `.env.local`): tudo fica só neste navegador, sem conta.
 
-## O que está pronto (v0.5)
+## O que está pronto (v0.6)
 
 - **Onboarding** em 4 etapas: nome, horários de acordar/dormir, áreas de foco e
   escolha dos primeiros hábitos (sugestões por área + hábitos personalizados).
@@ -63,6 +63,13 @@ Outros comandos:
   registro do que comeu (sem calorias, sem dietas), água com botões rápidos e meta
   definida por você, histórico de 7 dias e acompanhamento de peso **opcional**
   (desligado por padrão).
+- **Lembretes de água** *(novo na v0.6)*: meta em destaque com o ritmo esperado ao
+  longo do dia; lembretes no intervalo escolhido, só no seu horário acordado e,
+  se quiser, só quando estiver abaixo do ritmo. Beber água reinicia a contagem e o
+  aviso tem botão para registrar o copo. Com a aba visível, o aviso aparece no
+  FORGE; em segundo plano, como notificação do sistema. **Funcionam enquanto o
+  FORGE estiver aberto** (avisos com o navegador fechado exigem push, previsto
+  para depois da publicação).
 - **Fé e propósito** *(novo na v0.4, opcional)*: diário de devocional, leitura
   bíblica, oração, reflexão, gratidão e aprendizados; você escolhe quais práticas
   acompanhar. Pedidos de oração com registro de respostas. Sem pontuação,

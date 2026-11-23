@@ -40,6 +40,8 @@ interface Toast {
   id: number;
   message: string;
   action?: { label: string; run: () => void };
+  /** Tempo na tela em ms (padrão 4,5 s). */
+  duration?: number;
 }
 
 const ToastContext = createContext<(t: Omit<Toast, "id">) => void>(() => {});
@@ -51,7 +53,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const push = useCallback((t: Omit<Toast, "id">) => {
     const id = ++seq.current;
     setToasts((all) => [...all.slice(-2), { ...t, id }]);
-    setTimeout(() => setToasts((all) => all.filter((x) => x.id !== id)), 4500);
+    setTimeout(() => setToasts((all) => all.filter((x) => x.id !== id)), t.duration ?? 4500);
   }, []);
 
   return (
