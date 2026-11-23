@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/archivo/wdth.css";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
@@ -21,6 +22,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR">
       <body>
         <Providers>{children}</Providers>
+        {/* Contagem anônima de visitas (Vercel Web Analytics): sem cookies e sem dados pessoais. */}
+        <Analytics />
       </body>
     </html>
   );
