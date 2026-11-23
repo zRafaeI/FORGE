@@ -2,8 +2,19 @@
  * Operações puras sobre o documento do usuário. Sem React, sem armazenamento:
  * recebem o estado atual e devolvem o próximo. Testáveis isoladamente.
  */
-import type { Activity, CheckStatus, DateKey, ForgeData, Habit, ItemKind } from "@/lib/domain/types";
-import type { ActivityInput, HabitInput, ProfileInput } from "@/lib/domain/schemas";
+import type {
+  Activity,
+  CheckStatus,
+  DateKey,
+  ForgeData,
+  Habit,
+  ItemKind,
+  RestDay,
+  Run,
+  StrengthWorkout,
+  TrainingData,
+} from "@/lib/domain/types";
+import type { ActivityInput, HabitInput, ProfileInput, RestDayInput, RunInput, WorkoutInput } from "@/lib/domain/schemas";
 
 export const newId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -89,4 +100,59 @@ export function setCheck(
     ...data,
     checkIns: [...rest, { id: newId(), itemId, kind, date, status, at: now.toISOString() }],
   };
+}
+
+/* ---------- Treinamento ---------- */
+
+
+type TrainingCollection = keyof TrainingData;
+
+function withTraining(data: ForgeData, fn: (t: TrainingData) => TrainingData): ForgeData {
+  return { ...data, training: fn(data.training) };
+}
+
+export function addRun(data: ForgeData, input: RunInput, now = new Date()): ForgeData {
+  const run = { ...input, id: newId(), createdAt: now.toISOString() } as Run;
+  return withTraining(data, (t) => ({ ...t, runs: [...t.runs, run] }));
+}
+
+export function updateRun(data: ForgeData, id: string, input: RunInput): ForgeData {
+  return withTraining(data, (t) => ({
+    ...t,
+    runs: t.runs.map((r) => (r.id === id ? ({ id, createdAt: r.createdAt, ...input } as Run) : r)),
+  }));
+}
+
+export function addWorkout(data: ForgeData, input: WorkoutInput, now = new Date()): ForgeData {
+  const w: StrengthWorkout = { ...input, id: newId(), createdAt: now.toISOString() };
+  return withTraining(data, (t) => ({ ...t, workouts: [...t.workouts, w] }));
+}
+
+export function updateWorkout(data: ForgeData, id: string, input: WorkoutInput): ForgeData {
+  return withTraining(data, (t) => ({
+    ...t,
+    workouts: t.workouts.map((w) => (w.id === id ? { id, createdAt: w.createdAt, ...input } : w)),
+  }));
+}
+
+/** Um descanso por dia: registrar de novo no mesmo dia apenas atualiza a nota. */
+export function setRestDay(data: ForgeData, input: RestDayInput, now = new Date()): ForgeData {
+  return withTraining(data, (t) => {
+    const existing = t.restDays.find((r) => r.date === input.date);
+    if (existing) return { ...t, restDays: t.restDays.map((r) => (r === existing ? { ...r, note: input.note } : r)) };
+    const rest: RestDay = { ...input, id: newId(), createdAt: now.toISOString() };
+    return { ...t, restDays: [...t.restDays, rest] };
+  });
+}
+
+export function deleteTrainingEntry(data: ForgeData, collection: TrainingCollection, id: string): ForgeData {
+  return withTraining(data, (t) => ({ ...t, [collection]: (t[collection] as { id: string }[]).filter((e) => e.id !== id) }));
+}
+
+export function restoreTrainingEntry<C extends TrainingCollection>(
+  data: ForgeData,
+  collection: C,
+  entry: TrainingData[C][number],
+): ForgeData {
+  return withTraining(data, (t) => ({ ...t, [collection]: [...(t[collection] as unknown[]), entry] }));
 }

@@ -25,11 +25,11 @@ export const NAV: NavItem[] = [
   { href: "/", label: "Dashboard", short: "Hoje", icon: LayoutGrid, available: true },
   { href: "/rotina", label: "Minha rotina", short: "Rotina", icon: CalendarClock, available: true },
   { href: "/habitos", label: "Hábitos", short: "Hábitos", icon: Repeat, available: true },
-  { href: "/treinamento", label: "Treinamento", short: "Treino", icon: Dumbbell, available: false },
+  { href: "/treinamento", label: "Treinamento", short: "Treino", icon: Dumbbell, available: true },
   { href: "/alimentacao", label: "Alimentação", short: "Alimentação", icon: UtensilsCrossed, available: false },
   { href: "/estudos", label: "Estudos", short: "Estudos", icon: BookOpen, available: false },
   { href: "/fe", label: "Fé e propósito", short: "Fé", icon: HandHeart, available: false },
   { href: "/financas", label: "Finanças", short: "Finanças", icon: Wallet, available: false },
-  { href: "/evolucao", label: "Evolução", short: "Evolução", icon: LineChart, available: false },
+  { href: "/evolucao", label: "Evolução", short: "Evolução", icon: LineChart, available: true },
   { href: "/configuracoes", label: "Configurações", short: "Ajustes", icon: Settings, available: true },
 ];

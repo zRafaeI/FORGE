@@ -68,9 +68,61 @@ export const profileInputSchema = z
   });
 export type ProfileInput = z.infer<typeof profileInputSchema>;
 
-/** Validação de um backup completo (importação). */
-export const forgeDataSchema = z.object({
-  schemaVersion: z.literal(1),
+/* ---------- Treinamento ---------- */
+
+const optionalNote = z.string().trim().max(500, "Use no máximo 500 caracteres.").optional();
+
+export const runInputSchema = z.object({
+  date: dateKey,
+  distanceKm: z
+    .number({ error: "Informe a distância." })
+    .positive("A distância precisa ser maior que zero.")
+    .max(300, "Distância acima de 300 km — confira o valor."),
+  durationSec: z
+    .number({ error: "Informe a duração." })
+    .int()
+    .min(60, "A duração mínima é de 1 minuto.")
+    .max(48 * 3600, "Duração acima de 48 horas — confira o valor."),
+  effort: z.number().int().min(1).max(5).optional(),
+  notes: optionalNote,
+});
+export type RunInput = z.infer<typeof runInputSchema>;
+
+const setSchema = z.object({
+  reps: z.number({ error: "Informe as repetições." }).int("Use um número inteiro de repetições.").min(1, "Mínimo de 1 repetição.").max(500, "Confira as repetições."),
+  loadKg: z.number().min(0, "A carga não pode ser negativa.").max(1000, "Confira a carga.").optional(),
+});
+
+export const workoutInputSchema = z.object({
+  date: dateKey,
+  title: z.string().trim().min(2, "Dê um nome ao treino, ex.: Treino A.").max(60, "Use no máximo 60 caracteres."),
+  durationMin: z.number({ error: "Use apenas números." }).int("Use minutos inteiros.").min(5, "A duração mínima é de 5 minutos.").max(600, "Confira a duração.").optional(),
+  notes: optionalNote,
+  exercises: z
+    .array(
+      z.object({
+        name: z.string().trim().min(2, "Dê um nome ao exercício.").max(60, "Use no máximo 60 caracteres."),
+        sets: z.array(setSchema).min(1, "Adicione pelo menos uma série."),
+      }),
+    )
+    .min(1, "Adicione pelo menos um exercício."),
+});
+export type WorkoutInput = z.infer<typeof workoutInputSchema>;
+
+export const restDayInputSchema = z.object({ date: dateKey, note: optionalNote });
+export type RestDayInput = z.infer<typeof restDayInputSchema>;
+
+const trainingSchema = z.object({
+  runs: z.array(
+    runInputSchema.extend({ id: z.string(), createdAt: z.string() }),
+  ),
+  workouts: z.array(workoutInputSchema.extend({ id: z.string(), createdAt: z.string() })),
+  restDays: z.array(restDayInputSchema.extend({ id: z.string(), createdAt: z.string() })),
+});
+
+/** Validação de um backup completo (importação). Aceita v1 e v2; v1 é migrado. */
+const forgeDataV2Shape = {
+  schemaVersion: z.literal(2),
   profile: z
     .object({
       name: z.string(),
@@ -118,7 +170,18 @@ export const forgeDataSchema = z.object({
       at: z.string(),
     }),
   ),
-});
+  training: trainingSchema,
+};
+
+const forgeDataV2 = z.object(forgeDataV2Shape);
+const forgeDataV1 = z.object({ ...forgeDataV2Shape, schemaVersion: z.literal(1), training: z.undefined().optional() });
+
+/** Valida qualquer versão conhecida e devolve sempre a versão atual. */
+export const forgeDataSchema = z.union([forgeDataV2, forgeDataV1]).transform((d) =>
+  d.schemaVersion === 2
+    ? d
+    : { ...d, schemaVersion: 2 as const, training: { runs: [], workouts: [], restDays: [] } },
+);
 
 /** Converte erros do Zod em um mapa campo → mensagem para formulários. */
 export function fieldErrors(error: z.ZodError): Record<string, string> {

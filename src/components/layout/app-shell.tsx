@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { AlertTriangle, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, MoreHorizontal, X } from "lucide-react";
+import { Dialog } from "@/components/ui/dialog";
 import { useForge } from "@/lib/store/forge-store";
 import { OnboardingFlow } from "@/features/onboarding/onboarding-flow";
 import { cn } from "@/components/ui/cn";
@@ -13,6 +15,8 @@ import { Wordmark } from "./logo";
 export function AppShell({ children }: { children: ReactNode }) {
   const { data, status, error, dismissError } = useForge();
   const pathname = usePathname();
+  const [moreOpen, setMoreOpen] = useState(false);
+  useEffect(() => setMoreOpen(false), [pathname]);
 
   if (status === "loading") return <LoadingScreen />;
   if (!data.profile) return <OnboardingFlow />;
@@ -20,6 +24,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   const available = NAV.filter((n) => n.available);
   const upcoming = NAV.filter((n) => !n.available);
+  const MOBILE_PRIMARY = ["/", "/rotina", "/habitos", "/treinamento"];
+  const mobilePrimary = available.filter((n) => MOBILE_PRIMARY.includes(n.href));
+  const mobileSecondary = available.filter((n) => !MOBILE_PRIMARY.includes(n.href));
 
   return (
     <div className="ambient min-h-dvh lg:grid lg:grid-cols-[248px_1fr]">
@@ -100,9 +107,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Navegação inferior — mobile */}
       <nav
         aria-label="Principal"
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line-soft bg-bg/92 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line-soft bg-bg/92 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
       >
-        {available.map((n) => (
+        {mobilePrimary.map((n) => (
           <Link
             key={n.href}
             href={n.href}
@@ -116,7 +123,45 @@ export function AppShell({ children }: { children: ReactNode }) {
             {n.short}
           </Link>
         ))}
+        <button
+          type="button"
+          onClick={() => setMoreOpen(true)}
+          aria-haspopup="dialog"
+          className={cn(
+            "flex h-16 flex-col items-center justify-center gap-1 text-[11px] transition-colors",
+            mobileSecondary.some((n) => isActive(n.href)) ? "text-ink" : "text-faint",
+          )}
+        >
+          <MoreHorizontal size={20} className={mobileSecondary.some((n) => isActive(n.href)) ? "text-accent" : ""} />
+          Mais
+        </button>
       </nav>
+
+      <Dialog open={moreOpen} onClose={() => setMoreOpen(false)} title="Mais seções" size="sm">
+        <nav aria-label="Mais seções" className="flex flex-col gap-1">
+          {mobileSecondary.map((n) => (
+            <Link
+              key={n.href}
+              href={n.href}
+              aria-current={isActive(n.href) ? "page" : undefined}
+              className={cn(
+                "flex h-12 items-center gap-3 rounded-md px-3 text-[15px]",
+                isActive(n.href) ? "bg-surface-2 text-ink" : "text-muted hover:bg-surface-2 hover:text-ink",
+              )}
+            >
+              <n.icon size={18} className="text-accent" />
+              {n.label}
+            </Link>
+          ))}
+          <p className="mt-5 mb-1 px-3 text-xs text-faint">Chegando nas próximas versões</p>
+          {upcoming.map((n) => (
+            <span key={n.href} aria-disabled="true" className="flex h-10 items-center gap-3 px-3 text-sm text-faint">
+              <n.icon size={16} />
+              {n.label}
+            </span>
+          ))}
+        </nav>
+      </Dialog>
     </div>
   );
 }

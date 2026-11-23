@@ -8,6 +8,7 @@ import { useForge } from "@/lib/store/forge-store";
 import { useNow } from "@/lib/store/use-clock";
 import { formatLongDate, greetingFor, nowMinutes, timeToMinutes, toDateKey, weekday, WEEKDAY_INITIAL } from "@/lib/logic/dates";
 import { reflectionFor } from "@/lib/logic/reflections";
+import { formatKm, trainingWeeks } from "@/lib/logic/training";
 import { aggregate, categorySummary, indexCheckIns, itemsForDay, progressOf, progressRange } from "@/lib/logic/stats";
 import { Button } from "@/components/ui/button";
 import { CheckButton } from "@/components/ui/check";
@@ -41,6 +42,8 @@ function DashboardContent({ now }: { now: Date }) {
   const progress = progressOf(items);
   const week = useMemo(() => progressRange(data, today, 7), [data, today]);
   const weekAgg = aggregate(week);
+  const trainingWeek = useMemo(() => trainingWeeks(data.training, today, 1)[0], [data.training, today]);
+  const hasTraining = data.training.runs.length + data.training.workouts.length + data.training.restDays.length > 0;
 
   const areas: { id: CategoryId; icon: LucideIcon; label: string }[] = [
     { id: "treino", icon: Dumbbell, label: "Treinamento" },
@@ -253,12 +256,26 @@ function DashboardContent({ now }: { now: Date }) {
         <div className={cn("mt-4 grid gap-px overflow-hidden rounded-lg border border-line-soft bg-line-soft sm:grid-cols-2", areas.length === 4 ? "xl:grid-cols-4" : "xl:grid-cols-3")}>
           {areas.map((a) => {
             const s = categorySummary(data, a.id, today);
+            const showTraining = a.id === "treino" && hasTraining;
             return (
               <div key={a.id} className="flex flex-col bg-surface p-5">
                 <div className="flex items-center gap-2.5 text-sm">
                   <a.icon size={16} className="text-accent" />
                   <span className="font-medium">{a.label}</span>
                 </div>
+                {showTraining && (
+                  <Link href="/treinamento" className="group mt-5 block rounded-md border border-line-soft bg-bg/40 px-3.5 py-3 hover:border-line">
+                    <span className="block text-xs text-faint">Nesta semana</span>
+                    <span className="num mt-1 block text-sm">
+                      {formatKm(Math.round(trainingWeek.runKm * 10) / 10)} em {trainingWeek.runCount}{" "}
+                      {trainingWeek.runCount === 1 ? "corrida" : "corridas"}
+                    </span>
+                    <span className="block text-xs text-muted">
+                      {trainingWeek.strengthCount} {trainingWeek.strengthCount === 1 ? "sessão" : "sessões"} de musculação
+                      {trainingWeek.restDays > 0 && `, ${trainingWeek.restDays} ${trainingWeek.restDays === 1 ? "descanso" : "descansos"}`}
+                    </span>
+                  </Link>
+                )}
                 {s.hasAny ? (
                   <>
                     <div className="mt-5 flex items-baseline gap-2">
@@ -283,7 +300,7 @@ function DashboardContent({ now }: { now: Date }) {
                       </ul>
                     )}
                   </>
-                ) : (
+                ) : showTraining ? null : (
                   <div className="mt-4 flex flex-1 flex-col items-start justify-between gap-4">
                     <p className="text-[13px] leading-relaxed text-faint">Nada desta área na sua rotina ainda.</p>
                     <Button size="sm" variant="secondary" icon={<Plus size={14} />} onClick={() => actions.newHabit(a.id)}>
@@ -296,8 +313,9 @@ function DashboardContent({ now }: { now: Date }) {
           })}
         </div>
         <p className="mt-3 text-xs text-faint">
-          Resumos baseados nos seus hábitos e atividades de cada categoria. Registros detalhados de treino, refeições e
-          estudo chegam com os módulos dedicados.
+          Resumos baseados nos seus hábitos e atividades de cada categoria
+          {hasTraining ? " e nos seus registros de treino" : ""}. Registros detalhados de refeições e estudo chegam com
+          os módulos dedicados.
         </p>
       </section>
 

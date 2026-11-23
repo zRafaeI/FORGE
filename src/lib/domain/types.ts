@@ -84,18 +84,72 @@ export interface Profile {
   onboardedAt: string;
 }
 
+/* ---------- Treinamento ---------- */
+
+/** Esforço percebido, de 1 (muito leve) a 5 (máximo). */
+export type Effort = 1 | 2 | 3 | 4 | 5;
+
+export interface Run {
+  id: string;
+  date: DateKey;
+  distanceKm: number;
+  durationSec: number;
+  effort?: Effort;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface StrengthSet {
+  reps: number;
+  /** Carga em kg. Ausente = peso corporal. */
+  loadKg?: number;
+}
+
+export interface StrengthExercise {
+  name: string;
+  sets: StrengthSet[];
+}
+
+export interface StrengthWorkout {
+  id: string;
+  date: DateKey;
+  title: string;
+  exercises: StrengthExercise[];
+  durationMin?: number;
+  notes?: string;
+  createdAt: string;
+}
+
+/** Descanso planejado: recuperação faz parte do treino. */
+export interface RestDay {
+  id: string;
+  date: DateKey;
+  note?: string;
+  createdAt: string;
+}
+
+export interface TrainingData {
+  runs: Run[];
+  workouts: StrengthWorkout[];
+  restDays: RestDay[];
+}
+
+export const SCHEMA_VERSION = 2 as const;
+
 export interface ForgeData {
-  schemaVersion: 1;
+  schemaVersion: typeof SCHEMA_VERSION;
   profile: Profile | null;
   activities: Activity[];
   habits: Habit[];
   checkIns: CheckIn[];
+  training: TrainingData;
 }
 
 export const EMPTY_DATA: ForgeData = {
-  schemaVersion: 1,
+  schemaVersion: SCHEMA_VERSION,
   profile: null,
   activities: [],
   habits: [],
   checkIns: [],
+  training: { runs: [], workouts: [], restDays: [] },
 };

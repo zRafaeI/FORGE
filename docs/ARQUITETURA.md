@@ -29,6 +29,8 @@ src/
     routine/              Rotina, formulário de atividade, editor de repetição
     habits/               Hábitos e formulário
     settings/             Perfil e dados
+    training/             Treinamento: corridas, musculação, descanso, progressão
+    evolution/            Evolução: comparações, calendário, conquistas
     shared/               Linha de item e ações comuns (concluir, descansar, editar, excluir)
   lib/
     domain/               Tipos, categorias, esquemas Zod
@@ -64,6 +66,21 @@ src/
 8. **Dados corrompidos nunca são apagados em silêncio**: o original é preservado
    numa chave de backup e o usuário é avisado.
 9. **Reflexões diárias são originais**, sóbrias e escolhidas de forma determinística por data.
+10. **Treinos são registros, não tarefas** (v0.2). Corridas e musculação guardam o que
+    foi feito; para lembrar de treinar, use um hábito ou atividade de rotina.
+11. **Semanas de treino vão de segunda a domingo**, como na maioria dos planos de treino.
+12. **Recordes e progressão só usam dados reais.** "Melhor ritmo" considera corridas
+    a partir de 1 km; exercícios são agrupados pelo nome (sem diferenciar maiúsculas/espaços).
+13. **Descanso de treino é um por dia**; registrar de novo no mesmo dia só atualiza a observação.
+14. **Conquistas acumulam e nunca expiram**, e não comparam o usuário com ninguém.
+15. **Gráficos de série única** na cor de destaque, barras finas, tooltip por mouse e
+    teclado e tabela equivalente para leitores de tela.
+
+## Versões dos dados
+
+O documento salvo tem `schemaVersion`. A v0.2 introduziu a versão 2 (campo
+`training`). Dados e backups da versão 1 são migrados automaticamente ao carregar
+ou importar — nada é perdido.
 
 ## Persistência e migração para Supabase
 
@@ -79,6 +96,9 @@ Para migrar:
    create table activities (id uuid primary key, user_id uuid references auth.users, title text, notes text, category text, priority text, time text, duration_min int, recurrence jsonb, created_at timestamptz, updated_at timestamptz, archived_at timestamptz);
    create table habits     (id uuid primary key, user_id uuid references auth.users, title text, category text, target_time text, recurrence jsonb, created_at timestamptz, updated_at timestamptz, archived_at timestamptz);
    create table check_ins  (id uuid primary key, user_id uuid references auth.users, item_id uuid, kind text, date date, status text, at timestamptz, unique (item_id, date));
+   create table runs       (id uuid primary key, user_id uuid references auth.users, date date, distance_km numeric, duration_sec int, effort int, notes text, created_at timestamptz);
+   create table workouts   (id uuid primary key, user_id uuid references auth.users, date date, title text, exercises jsonb, duration_min int, notes text, created_at timestamptz);
+   create table rest_days  (id uuid primary key, user_id uuid references auth.users, date date, note text, created_at timestamptz, unique (user_id, date));
    ```
    com Row Level Security restringindo cada linha a `auth.uid() = user_id`.
 3. Implementar `SupabaseRepository` com a mesma interface `ForgeRepository`
@@ -89,8 +109,9 @@ A interface do app e a lógica não mudam.
 
 ## Testes
 
-`npm test` cobre datas, recorrência, validação, progresso, descanso, sequências,
-edição/exclusão e o repositório local (incluindo recuperação de dados corrompidos).
+`npm test` (32 testes) cobre datas, recorrência, validação, progresso, descanso, sequências,
+edição/exclusão, o repositório local (incluindo recuperação de dados corrompidos),
+treinamento (ritmo, volume, progressão, semanas, recordes), evolução e a migração v1 → v2.
 A versão 0.1 também foi verificada ponta a ponta num navegador real (onboarding,
 criação com validação, conclusão, persistência após recarregar, descanso, edição,
 exclusão com desfazer, desktop e celular).
