@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+/*
+ * FORGE — tokens de design
+ * Uma família (Archivo, eixo de largura): larga para títulos, normal para interface.
+ * Profundidade vem de camadas de superfície e luz discreta, não de sombras genéricas.
+ */
+@theme {
+  --color-bg: #101210;
+  --color-surface: #191d19;
+  --color-surface-2: #222822;
+  --color-surface-3: #2a312a;
+  --color-line: #303730;
+  --color-line-soft: #252b25;
+  --color-accent: #a5b89b;
+  --color-accent-deep: #596c54;
+  --color-ink: #f0f1ec;
+  --color-muted: #929b91;
+  --color-faint: #687168;
+  --color-warn: #d2a48f;
+
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --text-display: 2.75rem;
+  --text-display--line-height: 1.02;
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.15;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --ease-forge: cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-bg);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-stretch: 100%;
+    font-feature-settings: "ss01", "tnum" 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100dvh;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--color-accent) 35%, transparent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.75);
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  /* Tipografia de exibição: larga, firme, levemente comprimida no espaçamento. */
+  .type-display {
+    font-stretch: 118%;
+    font-weight: 620;
+    letter-spacing: -0.028em;
+    line-height: 1.04;
+  }
+  .type-title {
+    font-stretch: 112%;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Luz ambiente: um único foco de luz suave no topo, como iluminação de cena. */
+  .ambient {
+    background:
+      radial-gradient(80rem 28rem at 30% -12rem, color-mix(in oklab, var(--color-accent) 7%, transparent), transparent 70%),
+      var(--color-bg);
+  }
+
+  .surface {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line-soft);
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.025);
+  }
+}
+
+@keyframes forge-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes forge-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes forge-check {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes forge-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation: forge-in 260ms var(--ease-forge) both;
+}
+.animate-fade {
+  animation: forge-fade 200ms ease-out both;
+}
+.animate-check {
+  animation: forge-check 280ms var(--ease-forge) both;
+}
+.animate-ember {
+  animation: forge-pulse 2.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
