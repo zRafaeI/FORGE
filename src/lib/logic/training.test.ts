@@ -97,7 +97,7 @@ describe("migração", () => {
     const v1 = { schemaVersion: 1, profile: null, activities: [], habits: [], checkIns: [] };
     const r = forgeDataSchema.safeParse(v1);
     expect(r.success).toBe(true);
-    expect(r.data).toMatchObject({ schemaVersion: 3, training: { runs: [], workouts: [], restDays: [] }, study: { timer: null } });
+    expect(r.data).toMatchObject({ schemaVersion: 4, training: { runs: [], workouts: [], restDays: [] }, study: { timer: null } });
   });
   it("versão atual passa intacta", () => {
     const d = addRun(EMPTY_DATA, { date: "2026-11-17", distanceKm: 5, durationSec: 1700 });

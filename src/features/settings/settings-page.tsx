@@ -113,9 +113,9 @@ export function SettingsPage() {
               className="mt-0.5 size-4 accent-[#A5B89B]"
             />
             <span>
-              <span className="block text-sm">Mostrar vida espiritual no dashboard</span>
+              <span className="block text-sm">Usar a seção Fé e propósito</span>
               <span className="mt-0.5 block text-xs leading-relaxed text-faint">
-                Opcional. Exibe o resumo de devocional, oração e reflexão junto às outras áreas.
+                Opcional. Ativa o diário de devocional, leitura, oração e gratidão e o resumo no dashboard. Desativar não apaga registros.
               </span>
             </span>
           </label>

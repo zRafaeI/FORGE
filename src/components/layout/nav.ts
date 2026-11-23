@@ -28,8 +28,8 @@ export const NAV: NavItem[] = [
   { href: "/treinamento", label: "Treinamento", short: "Treino", icon: Dumbbell, available: true },
   { href: "/alimentacao", label: "Alimentação", short: "Alimentação", icon: UtensilsCrossed, available: true },
   { href: "/estudos", label: "Estudos", short: "Estudos", icon: BookOpen, available: true },
-  { href: "/fe", label: "Fé e propósito", short: "Fé", icon: HandHeart, available: false },
-  { href: "/financas", label: "Finanças", short: "Finanças", icon: Wallet, available: false },
+  { href: "/fe", label: "Fé e propósito", short: "Fé", icon: HandHeart, available: true },
+  { href: "/financas", label: "Finanças", short: "Finanças", icon: Wallet, available: true },
   { href: "/evolucao", label: "Evolução", short: "Evolução", icon: LineChart, available: true },
   { href: "/configuracoes", label: "Configurações", short: "Ajustes", icon: Settings, available: true },
 ];

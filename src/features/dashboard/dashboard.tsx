@@ -11,7 +11,8 @@ import { reflectionFor } from "@/lib/logic/reflections";
 import { formatKm, trainingWeeks, weekStart } from "@/lib/logic/training";
 import { formatHours, minutesIn } from "@/lib/logic/study";
 import { dayPlan, formatMl, waterOn } from "@/lib/logic/nutrition";
-import { addDays } from "@/lib/logic/dates";
+import { addDays, formatShortDate } from "@/lib/logic/dates";
+import { entriesOn, FAITH_KIND_META, lastEntryDate } from "@/lib/logic/faith";
 import { aggregate, categorySummary, indexCheckIns, itemsForDay, progressOf, progressRange } from "@/lib/logic/stats";
 import { Button } from "@/components/ui/button";
 import { CheckButton } from "@/components/ui/check";
@@ -54,6 +55,10 @@ function DashboardContent({ now }: { now: Date }) {
   const waterToday = waterOn(data.nutrition, today);
   const mealsToday = dayPlan(data.nutrition, today);
   const plannedDone = mealsToday.slots.filter((x) => x.log).length;
+  const hasFaith = data.faith.entries.length > 0 || data.faith.prayers.length > 0;
+  const faithToday = entriesOn(data.faith, today);
+  const faithLast = lastEntryDate(data.faith);
+  const openPrayers = data.faith.prayers.filter((p) => !p.answeredOn).length;
 
   const areas: { id: CategoryId; icon: LucideIcon; label: string }[] = [
     { id: "treino", icon: Dumbbell, label: "Treinamento" },
@@ -269,7 +274,8 @@ function DashboardContent({ now }: { now: Date }) {
             const showTraining = a.id === "treino" && hasTraining;
             const showStudy = a.id === "estudos" && hasStudy;
             const showNutrition = a.id === "alimentacao" && hasNutrition;
-            const moduleLinked = showTraining || showStudy || showNutrition;
+            const showFaith = a.id === "fe" && hasFaith;
+            const moduleLinked = showTraining || showStudy || showNutrition || showFaith;
             return (
               <div key={a.id} className="flex flex-col bg-surface p-5">
                 <div className="flex items-center gap-2.5 text-sm">
@@ -310,6 +316,23 @@ function DashboardContent({ now }: { now: Date }) {
                     </span>
                   </Link>
                 )}
+                {showFaith && (
+                  <Link href="/fe" className="mt-5 block rounded-md border border-line-soft bg-bg/40 px-3.5 py-3 hover:border-line">
+                    <span className="block text-xs text-faint">Diário</span>
+                    <span className="mt-1 block text-sm">
+                      {faithToday.length
+                        ? `Hoje: ${Array.from(new Set(faithToday.map((e) => FAITH_KIND_META[e.kind].label))).join(", ")}`
+                        : faithLast
+                          ? `Último registro em ${formatShortDate(faithLast)}`
+                          : "Nenhum registro ainda"}
+                    </span>
+                    {openPrayers > 0 && (
+                      <span className="block text-xs text-muted">
+                        {openPrayers} {openPrayers === 1 ? "pedido" : "pedidos"} de oração
+                      </span>
+                    )}
+                  </Link>
+                )}
                 {s.hasAny ? (
                   <>
                     <div className="mt-5 flex items-baseline gap-2">
@@ -347,8 +370,7 @@ function DashboardContent({ now }: { now: Date }) {
           })}
         </div>
         <p className="mt-3 text-xs text-faint">
-          Resumos baseados nos seus hábitos e atividades de cada categoria e nos registros de treino, estudo e
-          alimentação.
+          Resumos baseados nos seus hábitos e atividades de cada categoria e nos registros de cada seção.
         </p>
       </section>
 

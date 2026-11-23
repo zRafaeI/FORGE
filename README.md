@@ -24,7 +24,7 @@ Outros comandos:
 Não é preciso configurar nada: sem variáveis de ambiente, o FORGE salva tudo no
 navegador (localStorage). Veja `.env.example` para a futura integração com Supabase.
 
-## O que está pronto (v0.3)
+## O que está pronto (v0.4)
 
 - **Onboarding** em 4 etapas: nome, horários de acordar/dormir, áreas de foco e
   escolha dos primeiros hábitos (sugestões por área + hábitos personalizados).
@@ -59,6 +59,15 @@ navegador (localStorage). Veja `.env.example` para a futura integração com Sup
   registro do que comeu (sem calorias, sem dietas), água com botões rápidos e meta
   definida por você, histórico de 7 dias e acompanhamento de peso **opcional**
   (desligado por padrão).
+- **Fé e propósito** *(novo na v0.4, opcional)*: diário de devocional, leitura
+  bíblica, oração, reflexão, gratidão e aprendizados; você escolhe quais práticas
+  acompanhar. Pedidos de oração com registro de respostas. Sem pontuação,
+  sequências ou comparações.
+- **Finanças** *(novo na v0.4)*: entradas e despesas com categorias editáveis,
+  resumo de saldo (com saldo inicial opcional), mês a mês com despesas por
+  categoria, histórico de 6 meses, metas com valores guardados e retirados, e
+  reserva de emergência mostrando quantos meses de despesas ela cobre. Nenhuma
+  conta bancária é conectada.
 - **Configurações**: editar perfil e ritmo, ativar/desativar a área espiritual,
   exportar/importar backup em JSON, apagar todos os dados.
 - Responsivo (sidebar no desktop, navegação inferior no celular), acessível por
@@ -66,8 +75,7 @@ navegador (localStorage). Veja `.env.example` para a futura integração com Sup
 
 ## O que ainda falta
 
-Seções sinalizadas como "chegando nas próximas versões" no menu:
-Fé e propósito e Finanças.
-Também: sincronização com Supabase e autenticação.
+Todas as seções do briefing existem. Próximos passos naturais: sincronização entre
+dispositivos com Supabase e autenticação, lembretes opcionais e instalação como app (PWA).
 
 Detalhes de arquitetura e decisões: [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).

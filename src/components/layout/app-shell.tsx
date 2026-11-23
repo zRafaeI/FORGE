@@ -54,7 +54,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
 
-          <p className="mt-7 mb-2 px-2.5 text-xs text-faint">Chegando nas próximas versões</p>
+          {upcoming.length > 0 && <p className="mt-7 mb-2 px-2.5 text-xs text-faint">Chegando nas próximas versões</p>}
           {upcoming.map((n) => (
             <span
               key={n.href}
@@ -158,7 +158,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               {n.label}
             </Link>
           ))}
-          <p className="mt-5 mb-1 px-3 text-xs text-faint">Chegando nas próximas versões</p>
+          {upcoming.length > 0 && <p className="mt-5 mb-1 px-3 text-xs text-faint">Chegando nas próximas versões</p>}
           {upcoming.map((n) => (
             <span key={n.href} aria-disabled="true" className="flex h-10 items-center gap-3 px-3 text-sm text-faint">
               <n.icon size={16} />

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BOOK_STATUSES, CATEGORY_IDS, PRIORITIES } from "./types";
+import { BOOK_STATUSES, CATEGORY_IDS, FAITH_KINDS, PRIORITIES } from "./types";
 
 const time = z
   .string()
@@ -282,25 +282,109 @@ const nutritionSchema = z.object({
   weights: z.array(z.object({ id: z.string(), date: dateKey, kg: z.number(), createdAt: z.string() })),
 });
 
+/* ---------- Fé e propósito ---------- */
+
+export const faithEntryInputSchema = z
+  .object({
+    date: dateKey,
+    kind: z.enum(FAITH_KINDS),
+    reference: z.string().trim().max(80, "Use no máximo 80 caracteres.").optional(),
+    text: z.string().trim().max(2000, "Use no máximo 2.000 caracteres."),
+    items: z.array(z.string().trim().min(1).max(160, "Use no máximo 160 caracteres por item.")).max(10).optional(),
+  })
+  .refine((e) => e.text.length > 0 || (e.items?.length ?? 0) > 0 || !!e.reference, {
+    message: "Escreva algo antes de salvar.",
+    path: ["text"],
+  });
+export type FaithEntryInput = z.infer<typeof faithEntryInputSchema>;
+
+export const prayerTextSchema = z.string().trim().min(2, "Escreva o pedido.").max(300, "Use no máximo 300 caracteres.");
+
+const faithSchema = z.object({
+  kinds: z.array(z.enum(FAITH_KINDS)),
+  entries: z.array(
+    z.object({
+      id: z.string(),
+      date: dateKey,
+      kind: z.enum(FAITH_KINDS),
+      reference: z.string().optional(),
+      text: z.string(),
+      items: z.array(z.string()).optional(),
+      createdAt: z.string(),
+    }),
+  ),
+  prayers: z.array(
+    z.object({ id: z.string(), text: z.string(), createdAt: z.string(), answeredOn: dateKey.optional(), answerNote: z.string().optional() }),
+  ),
+});
+
+/* ---------- Finanças ---------- */
+
+const cents = (msg: string) =>
+  z.number({ error: msg }).int().positive("O valor precisa ser maior que zero.").max(100_000_000_00, "Confira o valor.");
+
+export const transactionInputSchema = z.object({
+  date: dateKey,
+  flow: z.enum(["entrada", "despesa"]),
+  amountCents: cents("Informe o valor, ex.: 49,90."),
+  categoryId: z.string().min(1, "Escolha a categoria."),
+  description: z.string().trim().max(120, "Use no máximo 120 caracteres.").optional(),
+});
+export type TransactionInput = z.infer<typeof transactionInputSchema>;
+
+export const goalInputSchema = z.object({
+  name: z.string().trim().min(2, "Dê um nome à meta.").max(60, "Use no máximo 60 caracteres."),
+  targetCents: cents("Informe o valor da meta."),
+  deadline: dateKey.optional(),
+  emergency: z.boolean(),
+});
+export type GoalInput = z.infer<typeof goalInputSchema>;
+
+export const categoryInputSchema = z.object({
+  name: z.string().trim().min(2, "Dê um nome à categoria.").max(40, "Use no máximo 40 caracteres."),
+  flow: z.enum(["entrada", "despesa"]),
+});
+
+const financeSchema = z.object({
+  categories: z.array(categoryInputSchema.extend({ id: z.string() })),
+  transactions: z.array(transactionInputSchema.extend({ id: z.string(), createdAt: z.string() })),
+  goals: z.array(goalInputSchema.extend({ id: z.string(), createdAt: z.string() })),
+  contributions: z.array(z.object({ id: z.string(), goalId: z.string(), date: dateKey, amountCents: z.number().int(), createdAt: z.string() })),
+  openingBalanceCents: z.number().int().optional(),
+});
+
 /* ---------- Versões do documento ---------- */
 
 const emptyTraining = () => ({ runs: [], workouts: [], restDays: [] });
 const emptyStudy = () => ({ subjects: [], sessions: [], books: [], readingLogs: [], timer: null });
 const emptyNutrition = () => ({ plan: [], meals: [], water: [], weightEnabled: false, weights: [] });
 
+const emptyFaith = () => ({ kinds: ["devocional", "leitura", "oracao", "gratidao"] as (typeof FAITH_KINDS)[number][], entries: [], prayers: [] });
+const emptyFinance = () => ({ categories: [], transactions: [], goals: [], contributions: [] });
+
+const forgeDataV4 = z.object({
+  ...forgeDataV2Shape,
+  schemaVersion: z.literal(4),
+  study: studySchema,
+  nutrition: nutritionSchema,
+  faith: faithSchema,
+  finance: financeSchema,
+});
 const forgeDataV3 = z.object({ ...forgeDataV2Shape, schemaVersion: z.literal(3), study: studySchema, nutrition: nutritionSchema });
 const forgeDataV2 = z.object(forgeDataV2Shape);
 const forgeDataV1 = z.object({ ...forgeDataV2Shape, schemaVersion: z.literal(1), training: z.undefined().optional() });
 
-/** Valida qualquer versão conhecida e devolve sempre a versão atual (3). */
-export const forgeDataSchema = z.union([forgeDataV3, forgeDataV2, forgeDataV1]).transform((d) => {
-  if (d.schemaVersion === 3) return d;
+/** Valida qualquer versão conhecida e devolve sempre a versão atual (4). Nada é descartado. */
+export const forgeDataSchema = z.union([forgeDataV4, forgeDataV3, forgeDataV2, forgeDataV1]).transform((d) => {
+  if (d.schemaVersion === 4) return d;
   return {
     ...d,
-    schemaVersion: 3 as const,
-    training: d.schemaVersion === 2 ? d.training : emptyTraining(),
-    study: emptyStudy(),
-    nutrition: emptyNutrition(),
+    schemaVersion: 4 as const,
+    training: d.schemaVersion >= 2 && d.training ? d.training : emptyTraining(),
+    study: d.schemaVersion === 3 ? d.study : emptyStudy(),
+    nutrition: d.schemaVersion === 3 ? d.nutrition : emptyNutrition(),
+    faith: emptyFaith(),
+    finance: emptyFinance(),
   };
 });
 

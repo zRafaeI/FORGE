@@ -23,6 +23,15 @@ import type {
   Subject,
   WaterLog,
   WeightLog,
+  FaithData,
+  FaithEntry,
+  FaithKind,
+  FinanceCategory,
+  FinanceData,
+  FinancialGoal,
+  GoalContribution,
+  PrayerRequest,
+  Transaction,
 } from "@/lib/domain/types";
 import type {
   ActivityInput,
@@ -36,6 +45,9 @@ import type {
   StudySessionInput,
   SubjectInput,
   WorkoutInput,
+  FaithEntryInput,
+  GoalInput,
+  TransactionInput,
 } from "@/lib/domain/schemas";
 
 export const newId = () =>
@@ -389,4 +401,132 @@ export function setPlan(data: ForgeData, items: (PlannedMealInput & { id?: strin
     plan,
     meals: n.meals.map((m) => (m.plannedMealId && !keep.has(m.plannedMealId) ? { ...m, plannedMealId: undefined } : m)),
   }));
+}
+
+/* ---------- Fé e propósito ---------- */
+
+function withFaith(data: ForgeData, fn: (f: FaithData) => FaithData): ForgeData {
+  return { ...data, faith: fn(data.faith) };
+}
+
+export function setFaithKinds(data: ForgeData, kinds: FaithKind[]): ForgeData {
+  return withFaith(data, (f) => ({ ...f, kinds }));
+}
+
+export function addFaithEntry(data: ForgeData, input: FaithEntryInput, now = new Date()): ForgeData {
+  const entry: FaithEntry = { ...input, id: newId(), createdAt: now.toISOString() };
+  return withFaith(data, (f) => ({ ...f, entries: [...f.entries, entry] }));
+}
+
+export function updateFaithEntry(data: ForgeData, id: string, input: FaithEntryInput): ForgeData {
+  return withFaith(data, (f) => ({
+    ...f,
+    entries: f.entries.map((e) => (e.id === id ? { id, createdAt: e.createdAt, ...input } : e)),
+  }));
+}
+
+export function deleteFaithEntry(data: ForgeData, id: string): ForgeData {
+  return withFaith(data, (f) => ({ ...f, entries: f.entries.filter((e) => e.id !== id) }));
+}
+
+export function restoreFaithEntry(data: ForgeData, entry: FaithEntry): ForgeData {
+  return withFaith(data, (f) => ({ ...f, entries: [...f.entries, entry] }));
+}
+
+export function addPrayer(data: ForgeData, text: string, now = new Date()): ForgeData {
+  const p: PrayerRequest = { id: newId(), text, createdAt: now.toISOString() };
+  return withFaith(data, (f) => ({ ...f, prayers: [...f.prayers, p] }));
+}
+
+export function answerPrayer(data: ForgeData, id: string, date: DateKey | null, note?: string): ForgeData {
+  return withFaith(data, (f) => ({
+    ...f,
+    prayers: f.prayers.map((p) =>
+      p.id === id ? { ...p, answeredOn: date ?? undefined, answerNote: date ? note : undefined } : p,
+    ),
+  }));
+}
+
+export function deletePrayer(data: ForgeData, id: string): ForgeData {
+  return withFaith(data, (f) => ({ ...f, prayers: f.prayers.filter((p) => p.id !== id) }));
+}
+
+/* ---------- Finanças ---------- */
+
+function withFinance(data: ForgeData, fn: (f: FinanceData) => FinanceData): ForgeData {
+  return { ...data, finance: fn(data.finance) };
+}
+
+/** Cria as categorias iniciais se ainda não houver nenhuma. */
+export function ensureCategories(data: ForgeData, defaults: Omit<FinanceCategory, "id">[]): ForgeData {
+  if (data.finance.categories.length) return data;
+  return withFinance(data, (f) => ({ ...f, categories: defaults.map((c) => ({ ...c, id: newId() })) }));
+}
+
+export function addCategory(data: ForgeData, input: Omit<FinanceCategory, "id">): ForgeData {
+  return withFinance(data, (f) => ({ ...f, categories: [...f.categories, { ...input, id: newId() }] }));
+}
+
+export function renameCategory(data: ForgeData, id: string, name: string): ForgeData {
+  return withFinance(data, (f) => ({ ...f, categories: f.categories.map((c) => (c.id === id ? { ...c, name } : c)) }));
+}
+
+/** Só remove categorias sem lançamentos — o histórico nunca perde a classificação. */
+export function deleteCategory(data: ForgeData, id: string): ForgeData {
+  if (data.finance.transactions.some((t) => t.categoryId === id)) return data;
+  return withFinance(data, (f) => ({ ...f, categories: f.categories.filter((c) => c.id !== id) }));
+}
+
+export function addTransaction(data: ForgeData, input: TransactionInput, now = new Date()): ForgeData {
+  const t: Transaction = { ...input, id: newId(), createdAt: now.toISOString() };
+  return withFinance(data, (f) => ({ ...f, transactions: [...f.transactions, t] }));
+}
+
+export function updateTransaction(data: ForgeData, id: string, input: TransactionInput): ForgeData {
+  return withFinance(data, (f) => ({
+    ...f,
+    transactions: f.transactions.map((t) => (t.id === id ? { id, createdAt: t.createdAt, ...input } : t)),
+  }));
+}
+
+export function deleteTransaction(data: ForgeData, id: string): ForgeData {
+  return withFinance(data, (f) => ({ ...f, transactions: f.transactions.filter((t) => t.id !== id) }));
+}
+
+export function restoreTransaction(data: ForgeData, t: Transaction): ForgeData {
+  return withFinance(data, (f) => ({ ...f, transactions: [...f.transactions, t] }));
+}
+
+export function addGoal(data: ForgeData, input: GoalInput, now = new Date()): ForgeData {
+  if (input.emergency && data.finance.goals.some((g) => g.emergency)) return data;
+  const g: FinancialGoal = { ...input, id: newId(), createdAt: now.toISOString() };
+  return withFinance(data, (f) => ({ ...f, goals: [...f.goals, g] }));
+}
+
+export function updateGoal(data: ForgeData, id: string, input: GoalInput): ForgeData {
+  return withFinance(data, (f) => ({
+    ...f,
+    goals: f.goals.map((g) => (g.id === id ? { id, createdAt: g.createdAt, ...input, emergency: g.emergency } : g)),
+  }));
+}
+
+export function deleteGoal(data: ForgeData, id: string): ForgeData {
+  return withFinance(data, (f) => ({
+    ...f,
+    goals: f.goals.filter((g) => g.id !== id),
+    contributions: f.contributions.filter((c) => c.goalId !== id),
+  }));
+}
+
+export function restoreGoal(data: ForgeData, goal: FinancialGoal, contributions: GoalContribution[]): ForgeData {
+  return withFinance(data, (f) => ({ ...f, goals: [...f.goals, goal], contributions: [...f.contributions, ...contributions] }));
+}
+
+export function addContribution(data: ForgeData, goalId: string, date: DateKey, amountCents: number, now = new Date()): ForgeData {
+  const c: GoalContribution = { id: newId(), goalId, date, amountCents, createdAt: now.toISOString() };
+  return withFinance(data, (f) => ({ ...f, contributions: [...f.contributions, c] }));
+}
+
+export function setOpeningBalance(data: ForgeData, cents: number | undefined): ForgeData {
+  return withFinance(data, (f) => ({ ...f, openingBalanceCents: cents }));
 }

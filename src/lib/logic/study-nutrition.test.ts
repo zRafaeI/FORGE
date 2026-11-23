@@ -141,6 +141,6 @@ describe("migração v2 → v3", () => {
     };
     const r = forgeDataSchema.safeParse(v2);
     expect(r.success).toBe(true);
-    expect(r.data).toMatchObject({ schemaVersion: 3, training: { runs: [{ id: "r" }] }, nutrition: { weightEnabled: false } });
+    expect(r.data).toMatchObject({ schemaVersion: 4, training: { runs: [{ id: "r" }] }, nutrition: { weightEnabled: false } });
   });
 });

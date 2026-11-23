@@ -237,7 +237,88 @@ export interface NutritionData {
   weights: WeightLog[];
 }
 
-export const SCHEMA_VERSION = 3 as const;
+/* ---------- Fé e propósito ---------- */
+
+export const FAITH_KINDS = ["devocional", "leitura", "oracao", "reflexao", "gratidao", "aprendizado"] as const;
+export type FaithKind = (typeof FAITH_KINDS)[number];
+
+export interface FaithEntry {
+  id: string;
+  date: DateKey;
+  kind: FaithKind;
+  /** Passagem ou referência, ex.: "Salmos 23" (devocional e leitura). */
+  reference?: string;
+  text: string;
+  /** Itens de gratidão, quando kind = "gratidao". */
+  items?: string[];
+  createdAt: string;
+}
+
+export interface PrayerRequest {
+  id: string;
+  text: string;
+  createdAt: string;
+  answeredOn?: DateKey;
+  answerNote?: string;
+}
+
+export interface FaithData {
+  /** Práticas que o usuário escolheu acompanhar. */
+  kinds: FaithKind[];
+  entries: FaithEntry[];
+  prayers: PrayerRequest[];
+}
+
+/* ---------- Finanças ---------- */
+
+export type MoneyFlow = "entrada" | "despesa";
+
+export interface FinanceCategory {
+  id: string;
+  name: string;
+  flow: MoneyFlow;
+}
+
+/** Valores em centavos (inteiros) para evitar erros de arredondamento. */
+export interface Transaction {
+  id: string;
+  date: DateKey;
+  flow: MoneyFlow;
+  amountCents: number;
+  categoryId: string;
+  description?: string;
+  createdAt: string;
+}
+
+export interface FinancialGoal {
+  id: string;
+  name: string;
+  targetCents: number;
+  deadline?: DateKey;
+  /** A reserva de emergência é uma meta especial (no máximo uma). */
+  emergency: boolean;
+  createdAt: string;
+}
+
+export interface GoalContribution {
+  id: string;
+  goalId: string;
+  date: DateKey;
+  /** Positivo = guardou; negativo = retirou. */
+  amountCents: number;
+  createdAt: string;
+}
+
+export interface FinanceData {
+  categories: FinanceCategory[];
+  transactions: Transaction[];
+  goals: FinancialGoal[];
+  contributions: GoalContribution[];
+  /** Saldo de partida informado pelo usuário, para estimar o saldo atual. */
+  openingBalanceCents?: number;
+}
+
+export const SCHEMA_VERSION = 4 as const;
 
 export interface ForgeData {
   schemaVersion: typeof SCHEMA_VERSION;
@@ -248,10 +329,14 @@ export interface ForgeData {
   training: TrainingData;
   study: StudyData;
   nutrition: NutritionData;
+  faith: FaithData;
+  finance: FinanceData;
 }
 
 export const EMPTY_STUDY: StudyData = { subjects: [], sessions: [], books: [], readingLogs: [], timer: null };
 export const EMPTY_NUTRITION: NutritionData = { plan: [], meals: [], water: [], weightEnabled: false, weights: [] };
+export const EMPTY_FAITH: FaithData = { kinds: ["devocional", "leitura", "oracao", "gratidao"], entries: [], prayers: [] };
+export const EMPTY_FINANCE: FinanceData = { categories: [], transactions: [], goals: [], contributions: [] };
 
 export const EMPTY_DATA: ForgeData = {
   schemaVersion: SCHEMA_VERSION,
@@ -262,4 +347,6 @@ export const EMPTY_DATA: ForgeData = {
   training: { runs: [], workouts: [], restDays: [] },
   study: EMPTY_STUDY,
   nutrition: EMPTY_NUTRITION,
+  faith: EMPTY_FAITH,
+  finance: EMPTY_FINANCE,
 };
