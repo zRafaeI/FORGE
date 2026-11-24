@@ -129,6 +129,15 @@
     transform: scale(1);
   }
 }
+@keyframes forge-blink {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  45% {
+    transform: scaleY(0.08);
+  }
+}
 @keyframes forge-pulse {
   0%,
   100% {
@@ -147,6 +156,9 @@
 }
 .animate-check {
   animation: forge-check 280ms var(--ease-forge) both;
+}
+.animate-blink {
+  animation: forge-blink 260ms var(--ease-forge);
 }
 .animate-ember {
   animation: forge-pulse 2.8s ease-in-out infinite;

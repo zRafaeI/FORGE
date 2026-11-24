@@ -6,6 +6,7 @@ import { z } from "zod";
 import { authMessage, useAuth } from "@/lib/store/auth";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Segmented } from "@/components/ui/form";
+import { PasswordInput } from "@/components/ui/password-input";
 import { LogoMark } from "@/components/layout/logo";
 
 type Mode = "entrar" | "criar" | "esqueci";
@@ -131,9 +132,8 @@ export function AuthScreen() {
         {mode !== "esqueci" && (
           <Field label="Senha" hint={mode === "criar" && !errors.password ? "Pelo menos 8 caracteres." : undefined} error={errors.password}>
             {(p) => (
-              <Input
+              <PasswordInput
                 {...p}
-                type="password"
                 autoComplete={mode === "criar" ? "new-password" : "current-password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -143,7 +143,7 @@ export function AuthScreen() {
         )}
         {mode === "criar" && (
           <Field label="Confirme a senha" error={errors.confirm}>
-            {(p) => <Input {...p} type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />}
+            {(p) => <PasswordInput {...p} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />}
           </Field>
         )}
         {errors.form && (
@@ -201,10 +201,10 @@ export function NewPasswordScreen() {
       <p className="mt-4 text-[15px] leading-relaxed text-muted">Escolha a senha que você vai usar daqui em diante.</p>
       <form onSubmit={submit} className="mt-8 flex flex-col gap-4" noValidate>
         <Field label="Nova senha" error={errors.password}>
-          {(p) => <Input {...p} type="password" autoComplete="new-password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)} />}
+          {(p) => <PasswordInput {...p} autoComplete="new-password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)} />}
         </Field>
         <Field label="Confirme a senha" error={errors.confirm}>
-          {(p) => <Input {...p} type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />}
+          {(p) => <PasswordInput {...p} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />}
         </Field>
         {errors.form && (
           <p role="alert" className="text-sm text-warn">
