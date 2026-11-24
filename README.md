@@ -28,7 +28,7 @@ Outros comandos:
   [`docs/SUPABASE.md`](docs/SUPABASE.md).
 - **Sem Supabase** (sem `.env.local`): tudo fica só neste navegador, sem conta.
 
-## O que está pronto (v0.8)
+## O que está pronto (v0.9)
 
 - **Onboarding** em 4 etapas: nome, horários de acordar/dormir, áreas de foco e
   escolha dos primeiros hábitos (sugestões por área + hábitos personalizados).
@@ -87,7 +87,9 @@ Outros comandos:
   sair. Dados salvos no navegador e sincronizados com o Supabase, funcionando
   offline, com controle de conflito entre dispositivos. Dados que já existiam no
   navegador vão para a conta no primeiro acesso.
-- **App instalável (PWA)** *(novo na v0.8)*: instala direto do navegador, sem loja e
+- **Lembrete de água como notificação** *(novo na v0.9)*: chega com o som do celular mesmo com o FORGE fechado
+  (Android, computador e iPhone com o app instalado). Configuração em [docs/SUPABASE.md](docs/SUPABASE.md).
+- **App instalável (PWA)** *(v0.8)*: instala direto do navegador, sem loja e
   sem custo — ícone na tela inicial, tela cheia e uso offline (service worker guarda as
   telas e arquivos; dados sincronizam quando a internet volta). Botão "Instalar o app"
   em Configurações (Android/PC), passo a passo no iPhone e um convite discreto no

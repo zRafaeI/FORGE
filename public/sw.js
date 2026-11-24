@@ -8,9 +8,11 @@
  * - Demais arquivos do próprio site (ícones, manifesto): cache primeiro com atualização em segundo plano.
  * - Outros domínios (Supabase) e /_vercel/* (Analytics): nunca interceptados.
  *
+ * - Notificações push: lembretes de água enviados pelo servidor, mesmo com o app fechado.
+ *
  * Mude VERSION só quando a lógica deste arquivo mudar; o conteúdo do app se atualiza sozinho.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const PAGES = `forge-pages-${VERSION}`;
 const ASSETS = `forge-assets-${VERSION}`;
 
@@ -26,7 +28,7 @@ const ROUTES = [
   "/evolucao",
   "/configuracoes",
 ];
-const STATIC = ["/manifest.webmanifest", "/icon.svg", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png"];
+const STATIC = ["/manifest.webmanifest", "/icon.svg", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png", "/icons/badge-96.png"];
 
 /** Guarda as telas e os arquivos que cada uma usa, para funcionarem offline desde o primeiro acesso. */
 async function precache() {
@@ -117,4 +119,54 @@ self.addEventListener("fetch", (event) => {
   } else {
     event.respondWith(cacheFirst(request, true));
   }
+});
+
+/* ── Notificações ─────────────────────────────────────────────────────────── */
+
+const IOS = /iPhone|iPad|iPod/.test(self.navigator.userAgent);
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { body: event.data ? event.data.text() : "" };
+  }
+  const title = payload.title || "FORGE";
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const visible = windows.filter((c) => c.visibilityState === "visible");
+      for (const c of visible) c.postMessage({ type: "forge-push", payload });
+      // Com o FORGE aberto e em foco, o aviso aparece dentro do app.
+      // No iPhone a notificação é sempre exibida (o sistema exige).
+      if (!IOS && windows.some((c) => c.focused)) return;
+      await self.registration.showNotification(title, {
+        body: payload.body || "",
+        tag: payload.tag || "forge",
+        renotify: true,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/badge-96.png",
+        vibrate: [180, 90, 180],
+        data: { url: payload.url || "/" },
+      });
+    })(),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL((event.notification.data && event.notification.data.url) || "/", self.location.origin).href;
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const existing = windows.find((c) => new URL(c.url).origin === self.location.origin);
+      if (existing) {
+        await existing.focus();
+        if (existing.url !== target && "navigate" in existing) await existing.navigate(target).catch(() => undefined);
+        return;
+      }
+      await self.clients.openWindow(target);
+    })(),
+  );
 });

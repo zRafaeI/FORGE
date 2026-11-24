@@ -7,6 +7,8 @@ import { toDateKey } from "@/lib/logic/dates";
 import { formatMl } from "@/lib/logic/nutrition";
 import { reminderState } from "@/lib/logic/water-reminder";
 import { useToast } from "@/components/ui/feedback";
+import { useAuth } from "@/lib/store/auth";
+import { noteReminderShown, pushIsActive, pushMarkedActive, showLocalNotification } from "@/lib/push/client";
 
 /** Quando o último lembrete foi exibido neste dispositivo (compartilhado entre abas). */
 const LAST_KEY = "forge:water-reminder:last";
@@ -38,24 +40,49 @@ export function lastReminderAt(): Date | null {
 }
 
 /**
- * Verifica periodicamente se é hora de lembrar de beber água.
- * - Com a aba visível: aviso dentro do FORGE com botão para registrar.
- * - Com a aba em segundo plano: notificação do sistema (se permitida).
- * Só funciona com o FORGE aberto; notificações com o navegador fechado exigem
- * um servidor de push (próxima etapa, junto com a publicação do app).
+ * Lembrete de beber água.
+ * - Aparelho com notificações ativadas: o servidor envia (mesmo com o FORGE fechado).
+ *   Se o FORGE estiver aberto, o service worker repassa e o aviso aparece aqui dentro.
+ * - Demais aparelhos: o próprio app confere a cada 20 s enquanto estiver aberto.
+ *   Aba visível → aviso dentro do FORGE; em segundo plano → notificação do sistema.
  */
 export function WaterReminderService() {
   const { data, update } = useForge();
+  const { user } = useAuth();
+  const loggedIn = !!user;
   const toast = useToast();
   const dataRef = useRef(data);
   dataRef.current = data;
 
   const enabled = !!data.nutrition.waterReminder?.enabled;
 
+  // Lembretes vindos do servidor com o FORGE aberto.
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    function onMessage(e: MessageEvent) {
+      if (e.data?.type !== "forge-push" || e.data.payload?.kind !== "water") return;
+      try {
+        localStorage.setItem(LAST_KEY, String(Date.now()));
+      } catch {
+        /* sem armazenamento */
+      }
+      toast({
+        message: `${e.data.payload.title ?? "Hora de beber água"}. ${e.data.payload.body ?? ""}`.trim(),
+        duration: 20_000,
+        action: { label: "+300 ml", run: () => update((x) => addWater(x, toDateKey(new Date()), 300)) },
+      });
+    }
+    navigator.serviceWorker.addEventListener("message", onMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", onMessage);
+  }, [toast, update]);
+
   useEffect(() => {
     if (!enabled) return;
+    // Confere se a marca local de "recebe pelo servidor" ainda vale.
+    void pushIsActive();
 
     function check() {
+      if (pushMarkedActive()) return; // o servidor cuida deste aparelho
       const d = dataRef.current;
       const now = new Date();
       const today = toDateKey(now);
@@ -82,6 +109,7 @@ export function WaterReminderService() {
       const goal = d.nutrition.waterGoalMl;
       const body = goal ? `Você bebeu ${formatMl(total)} de ${formatMl(goal)} hoje.` : `Você bebeu ${formatMl(total)} hoje.`;
 
+      noteReminderShown(loggedIn);
       if (document.visibilityState === "visible") {
         toast({
           message: `Hora de beber água. ${body}`,
@@ -89,15 +117,19 @@ export function WaterReminderService() {
           action: { label: "+300 ml", run: () => update((x) => addWater(x, toDateKey(new Date()), 300)) },
         });
       } else if (notificationSupport() === "granted") {
-        try {
-          const n = new Notification("Hora de beber água", { body, tag: "forge-water", icon: "/icon.svg" });
-          n.onclick = () => {
-            window.focus();
-            n.close();
-          };
-        } catch {
-          /* alguns navegadores móveis só permitem notificações via service worker */
-        }
+        // Pelo service worker: é o único jeito aceito no Android.
+        void showLocalNotification("Hora de beber água", body).then((shown) => {
+          if (shown) return;
+          try {
+            const n = new Notification("Hora de beber água", { body, tag: "forge-water", icon: "/icons/icon-192.png" });
+            n.onclick = () => {
+              window.focus();
+              n.close();
+            };
+          } catch {
+            /* navegador sem notificações fora do service worker */
+          }
+        });
       }
     }
 
@@ -109,7 +141,7 @@ export function WaterReminderService() {
       clearInterval(id);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [enabled, toast, update]);
+  }, [enabled, loggedIn, toast, update]);
 
   return null;
 }

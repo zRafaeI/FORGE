@@ -76,7 +76,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   t.action?.run();
                   setToasts((all) => all.filter((x) => x.id !== t.id));
                 }}
-                className="rounded-sm px-2 py-1 font-medium text-accent hover:bg-surface-3"
+                className="shrink-0 whitespace-nowrap rounded-sm px-2 py-1 font-medium text-accent hover:bg-surface-3"
               >
                 {t.action.label}
               </button>

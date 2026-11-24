@@ -13,6 +13,15 @@ O script cria a tabela `forge_documents`, liga a segurança por linha (cada usu�
 acessa os próprios dados) e a função que grava com controle de versão. Pode ser
 rodado de novo sem problema.
 
+## 1b. Notificações de lembrete de água (uma vez)
+
+1. No **SQL Editor**, abra uma nova query, cole todo o conteúdo de [`supabase/push.sql`](../supabase/push.sql) e clique em **Run**.
+2. Pronto: o agendador (pg_cron) passa a chamar `/api/push/water` a cada 5 minutos.
+   Na primeira chamada o site cria sozinho o par de chaves de envio e guarda no banco.
+   Nenhuma chave precisa ser copiada para a Vercel.
+3. Para conferir: **Integrations → Cron → Jobs** mostra `forge-water-push`, e o histórico de execuções.
+4. Se o endereço do site mudar, troque a URL no fim do `push.sql` e rode só o trecho do `cron.schedule`.
+
 ## 2. Endereços de retorno (links de e-mail)
 
 Em **Authentication → URL Configuration**:

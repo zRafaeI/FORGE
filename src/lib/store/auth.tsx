@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AuthError } from "@supabase/supabase-js";
 import { getSupabase, supabaseConfigured } from "@/lib/data/supabase-client";
+import { disablePush } from "@/lib/push/client";
 
 export interface AuthUser {
   id: string;
@@ -92,6 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    // Este aparelho deixa de receber os lembretes da conta que está saindo.
+    await disablePush().catch(() => undefined);
     if (supabaseConfigured) await getSupabase().auth.signOut();
     setUser(null);
   }, []);

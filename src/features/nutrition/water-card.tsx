@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, BellOff, Droplet, Undo2 } from "lucide-react";
+import { Bell, Droplet, Undo2 } from "lucide-react";
 import type { WaterReminder } from "@/lib/domain/types";
 import { waterAmountSchema, waterGoalSchema } from "@/lib/domain/schemas";
 import { addWater, deleteWater, setWaterGoal, setWaterReminder } from "@/lib/store/actions";
@@ -13,7 +13,8 @@ import { useToast } from "@/components/ui/feedback";
 import { Input, Select, Switch } from "@/components/ui/form";
 import { decimalToInput, parseDecimal } from "@/components/ui/number";
 import { cn } from "@/components/ui/cn";
-import { lastReminderAt, notificationSupport, requestNotifications, type NotificationSupport } from "./water-reminder-service";
+import { lastReminderAt } from "./water-reminder-service";
+import { DevicePush } from "./device-push";
 
 const GOAL_PRESETS = [1500, 2000, 2500, 3000];
 
@@ -207,9 +208,8 @@ function ReminderPanel() {
   const profile = data.profile!;
   const settings = n.waterReminder;
   const enabled = !!settings?.enabled;
-  const [support, setSupport] = useState<NotificationSupport>("unsupported");
+  const [autoEnable, setAutoEnable] = useState(false);
   const [, force] = useState(0);
-  useEffect(() => setSupport(notificationSupport()), []);
   useEffect(() => {
     if (!enabled) return;
     const id = setInterval(() => force((x) => x + 1), 30_000);
@@ -219,9 +219,10 @@ function ReminderPanel() {
   const current: WaterReminder = settings ?? defaultReminder(profile.wakeTime, profile.sleepTime);
   const save = (patch: Partial<WaterReminder>) => update((d) => setWaterReminder(d, { ...current, ...patch }));
 
-  async function toggle(on: boolean) {
+  function toggle(on: boolean) {
     save({ enabled: on });
-    if (on && support === "default") setSupport(await requestNotifications());
+    // Ao ligar, já oferece as notificações neste aparelho.
+    if (on) setAutoEnable(true);
   }
 
   const today = new Date();
@@ -248,7 +249,7 @@ function ReminderPanel() {
 
   return (
     <div className="mt-5 border-t border-line-soft pt-4">
-      <Switch checked={enabled} onChange={(v) => void toggle(v)} label="Lembretes para beber água" description={enabled ? undefined : "Avisos ao longo do dia, no seu horário acordado."} />
+      <Switch checked={enabled} onChange={(v) => toggle(v)} label="Lembretes para beber água" description={enabled ? undefined : "Avisos ao longo do dia, no seu horário acordado."} />
       {enabled && (
         <div className="mt-4 flex flex-col gap-3">
           <div className="grid grid-cols-[1fr_auto] items-center gap-3">
@@ -286,23 +287,7 @@ function ReminderPanel() {
               {status}
             </p>
           )}
-          <p className="flex gap-2 rounded-md bg-bg/50 px-3 py-2.5 text-[11px] leading-relaxed text-faint">
-            {support === "granted" ? <Bell size={13} className="mt-0.5 shrink-0" aria-hidden /> : <BellOff size={13} className="mt-0.5 shrink-0" aria-hidden />}
-            <span>
-              {support === "granted"
-                ? "Notificações do sistema ativadas. Os lembretes aparecem enquanto o FORGE estiver aberto, mesmo em outra aba ou minimizado."
-                : support === "denied"
-                  ? "As notificações estão bloqueadas neste navegador. Os lembretes aparecem dentro do FORGE enquanto ele estiver aberto. Para liberar, use o ícone de cadeado ao lado do endereço."
-                  : support === "default"
-                    ? "Permita as notificações quando o navegador perguntar para receber os lembretes mesmo com o FORGE minimizado."
-                    : "Este navegador não oferece notificações. Os lembretes aparecem dentro do FORGE enquanto ele estiver aberto."}
-            </span>
-          </p>
-          {support === "default" && (
-            <Button size="sm" variant="secondary" className="self-start" onClick={async () => setSupport(await requestNotifications())}>
-              Permitir notificações
-            </Button>
-          )}
+          <DevicePush autoEnable={autoEnable} onAutoEnableDone={() => setAutoEnable(false)} />
         </div>
       )}
     </div>

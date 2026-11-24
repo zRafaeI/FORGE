@@ -129,6 +129,14 @@ src/
     instalação. Supabase e `/_vercel/*` nunca passam pelo service worker. Ele só é
     registrado em produção. Mude `VERSION` em `sw.js` apenas se a lógica dele mudar.
 28. **Analytics só na Vercel** (`process.env.VERCEL`), para não gerar 404 ao rodar localmente.
+29. **Lembrete de água por notificação push** (Web Push, padrão aberto, grátis):
+    - aparelhos inscritos ficam em `forge_push_subscriptions`;
+    - o pg_cron do Supabase chama `/api/push/water` a cada 5 min, com um segredo que só existe no banco (schema `forge_private`);
+    - a rota repassa o segredo às funções do banco, decide com a mesma regra do app (`reminderState`, no fuso da pessoa) e envia;
+    - o par de chaves VAPID é gerado na primeira execução e guardado no banco: a Vercel não guarda segredo nenhum e o site usa só a chave pública do Supabase;
+    - aparelhos com push ativo não repetem o aviso localmente; com o app aberto e em foco, o service worker repassa o lembrete para um aviso dentro do app;
+    - aparelhos sem push avisam o servidor (`forge_note_water_reminder`) quando mostram um lembrete, para não repetir em outro aparelho;
+    - sair da conta remove a inscrição deste aparelho.
 
 ## Versões dos dados
 
