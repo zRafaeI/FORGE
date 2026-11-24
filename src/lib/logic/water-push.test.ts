@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { waterPushFor, wallClock } from "./water-push";
+import { WATER_MESSAGES } from "./water-messages";
 
 const reminder = { enabled: true, intervalMin: 60, start: "06:00", end: "22:00", onlyWhenBehind: false };
 // 23/11/2026 15:00 UTC = 12:00 em São Paulo (UTC−3)
@@ -31,7 +32,8 @@ describe("lembrete por notificação (servidor)", () => {
       timeZone: "America/Sao_Paulo",
       now,
     });
-    expect(res).toEqual({ due: true, title: "Hora de beber água", body: "Você bebeu 500 ml de 2 L hoje." });
+    expect(res).toMatchObject({ due: true, body: "Você bebeu 500 ml de 2 L hoje." });
+    expect(res.due && WATER_MESSAGES.MIDDLE).toContain(res.due && res.title);
   });
 
   it("respeita o último copo e o último lembrete enviado", () => {

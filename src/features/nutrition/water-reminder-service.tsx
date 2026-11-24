@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { addWater } from "@/lib/store/actions";
 import { useForge } from "@/lib/store/forge-store";
 import { toDateKey } from "@/lib/logic/dates";
-import { formatMl } from "@/lib/logic/nutrition";
+import { waterReminderText } from "@/lib/logic/water-messages";
 import { reminderState } from "@/lib/logic/water-reminder";
 import { useToast } from "@/components/ui/feedback";
 import { useAuth } from "@/lib/store/auth";
@@ -67,7 +67,7 @@ export function WaterReminderService() {
         /* sem armazenamento */
       }
       toast({
-        message: `${e.data.payload.title ?? "Hora de beber água"}. ${e.data.payload.body ?? ""}`.trim(),
+        message: `${e.data.payload.title ?? "Hora de beber água."} ${e.data.payload.body ?? ""}`.trim(),
         duration: 20_000,
         action: { label: "+300 ml", run: () => update((x) => addWater(x, toDateKey(new Date()), 300)) },
       });
@@ -106,22 +106,21 @@ export function WaterReminderService() {
         /* sem armazenamento: segue sem coordenação entre abas */
       }
 
-      const goal = d.nutrition.waterGoalMl;
-      const body = goal ? `Você bebeu ${formatMl(total)} de ${formatMl(goal)} hoje.` : `Você bebeu ${formatMl(total)} hoje.`;
+      const { title, body } = waterReminderText({ totalMl: total, goalMl: d.nutrition.waterGoalMl, now });
 
       noteReminderShown(loggedIn);
       if (document.visibilityState === "visible") {
         toast({
-          message: `Hora de beber água. ${body}`,
+          message: `${title} ${body}`,
           duration: 20_000,
           action: { label: "+300 ml", run: () => update((x) => addWater(x, toDateKey(new Date()), 300)) },
         });
       } else if (notificationSupport() === "granted") {
         // Pelo service worker: é o único jeito aceito no Android.
-        void showLocalNotification("Hora de beber água", body).then((shown) => {
+        void showLocalNotification(title, body).then((shown) => {
           if (shown) return;
           try {
-            const n = new Notification("Hora de beber água", { body, tag: "forge-water", icon: "/icons/icon-192.png" });
+            const n = new Notification(title, { body, tag: "forge-water", icon: "/icons/icon-192.png" });
             n.onclick = () => {
               window.focus();
               n.close();

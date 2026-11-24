@@ -1,5 +1,5 @@
 import type { WaterLog, WaterReminder } from "@/lib/domain/types";
-import { formatMl } from "./nutrition";
+import { waterReminderText } from "./water-messages";
 import { reminderState } from "./water-reminder";
 
 /** O pedaço dos dados de alimentação que o servidor de lembretes recebe. */
@@ -66,10 +66,5 @@ export function waterPushFor(input: {
     lastReminderAt: input.lastSentAt ? toWall(input.lastSentAt) : null,
   });
   if (!state.due) return { due: false };
-  const goal = n.waterGoalMl;
-  return {
-    due: true,
-    title: "Hora de beber água",
-    body: goal ? `Você bebeu ${formatMl(total)} de ${formatMl(goal)} hoje.` : `Você bebeu ${formatMl(total)} hoje.`,
-  };
+  return { due: true, ...waterReminderText({ totalMl: total, goalMl: n.waterGoalMl, now: wall }) };
 }
