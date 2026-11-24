@@ -118,7 +118,8 @@ export function BarChart({
           </span>
         ))}
       </div>
-      <table className="sr-only">
+      <div className="sr-only">
+      <table>
         <caption>{title}</caption>
         <tbody>
           {data.map((d) => (
@@ -128,6 +129,7 @@ export function BarChart({
           ))}
         </tbody>
       </table>
+      </div>
     </figure>
   );
 }

@@ -8,6 +8,7 @@ import { fieldErrors, profileInputSchema } from "@/lib/domain/schemas";
 import { updateProfile } from "@/lib/store/actions";
 import { useForge } from "@/lib/store/forge-store";
 import { useAuth } from "@/lib/store/auth";
+import { InstallSection } from "@/features/install/install-ui";
 import { toDateKey } from "@/lib/logic/dates";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,7 @@ export function SettingsPage() {
     <>
       <PageHeader title="Configurações" description="Seu perfil, o ritmo do seu dia e o controle dos seus dados." />
 
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <form onSubmit={save} className="flex flex-col gap-6" noValidate aria-labelledby="profile-title">
           <h2 id="profile-title" className="type-title text-[15px]">
             Perfil e ritmo
@@ -164,6 +165,7 @@ export function SettingsPage() {
               </div>
             </div>
           )}
+          <InstallSection />
           <div className="flex flex-wrap gap-2">
             <Button icon={<Download size={16} />} onClick={download}>
               Exportar backup

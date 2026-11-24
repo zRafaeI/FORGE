@@ -28,7 +28,7 @@ Outros comandos:
   [`docs/SUPABASE.md`](docs/SUPABASE.md).
 - **Sem Supabase** (sem `.env.local`): tudo fica só neste navegador, sem conta.
 
-## O que está pronto (v0.7)
+## O que está pronto (v0.8)
 
 - **Onboarding** em 4 etapas: nome, horários de acordar/dormir, áreas de foco e
   escolha dos primeiros hábitos (sugestões por área + hábitos personalizados).
@@ -87,6 +87,11 @@ Outros comandos:
   sair. Dados salvos no navegador e sincronizados com o Supabase, funcionando
   offline, com controle de conflito entre dispositivos. Dados que já existiam no
   navegador vão para a conta no primeiro acesso.
+- **App instalável (PWA)** *(novo na v0.8)*: instala direto do navegador, sem loja e
+  sem custo — ícone na tela inicial, tela cheia e uso offline (service worker guarda as
+  telas e arquivos; dados sincronizam quando a internet volta). Botão "Instalar o app"
+  em Configurações (Android/PC), passo a passo no iPhone e um convite discreto no
+  celular. Telas revisadas em 360 px, 390 px e 768 px.
 - **Configurações**: editar perfil e ritmo, ativar/desativar a área espiritual,
   exportar/importar backup em JSON, apagar todos os dados.
 - Responsivo (sidebar no desktop, navegação inferior no celular), acessível por

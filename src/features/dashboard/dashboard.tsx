@@ -23,6 +23,7 @@ import { cn } from "@/components/ui/cn";
 import { ItemRow } from "@/features/shared/item-row";
 import { useItemActions } from "@/features/shared/use-item-actions";
 import { DayRuler } from "./day-ruler";
+import { InstallBanner } from "@/features/install/install-ui";
 
 export function Dashboard() {
   const now = useNow();
@@ -76,6 +77,7 @@ function DashboardContent({ now }: { now: Date }) {
 
   return (
     <div className="flex flex-col gap-12">
+      <InstallBanner />
       {/* Cabeçalho */}
       <header className="animate-in">
         <p className="text-sm text-muted">
@@ -90,7 +92,7 @@ function DashboardContent({ now }: { now: Date }) {
       {/* Régua do dia */}
       <DayRuler wake={profile.wakeTime} sleep={profile.sleepTime} nowMin={nowMin} items={items} />
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-12">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-12">
         {/* Compromissos do dia */}
         <section aria-labelledby="today-title">
           <div className="mb-2 flex items-center justify-between gap-3">

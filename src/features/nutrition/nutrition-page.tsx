@@ -75,7 +75,7 @@ function NutritionContent({ today }: { today: string }) {
       />
 
       <div className="flex flex-col gap-12">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-12">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-12">
           {/* Refeições do dia */}
           <section aria-labelledby="meals-title">
             <div className="mb-4 flex items-center gap-1">

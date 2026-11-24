@@ -128,7 +128,7 @@ function FaithContent({ today }: { today: string }) {
         </div>
       </section>
 
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,1fr)_340px]">
         <section aria-labelledby="journal-title">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 id="journal-title" className="type-title text-[15px]">

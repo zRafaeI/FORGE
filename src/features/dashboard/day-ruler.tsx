@@ -70,7 +70,7 @@ export function DayRuler({
         </p>
       </div>
 
-      <div className="relative h-16 select-none">
+      <div className="relative h-16 select-none [overflow-x:clip] [overflow-y:visible]">
         {/* Trilho */}
         <div className="absolute inset-x-0 top-7 h-[3px] rounded-full bg-surface-3" />
         <div
@@ -105,7 +105,12 @@ export function DayRuler({
                     !i.status && "border-accent bg-bg",
                   )}
                 />
-                <span className="pointer-events-none absolute bottom-5 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-sm border border-line bg-surface-2 px-2 py-1 text-xs opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                <span
+                  className={cn(
+                    "pointer-events-none absolute bottom-5 z-10 max-w-[70vw] truncate whitespace-nowrap rounded-sm border border-line bg-surface-2 px-2 py-1 text-xs opacity-0 shadow-lg transition-opacity group-hover:opacity-100",
+                    p < 0.3 ? "-left-1" : p > 0.7 ? "-right-1" : "left-1/2 -translate-x-1/2",
+                  )}
+                >
                   <span className="num text-muted">{i.time}</span> {i.title}
                   {i.status === "done" ? " (concluído)" : i.status === "rest" ? " (descanso)" : ""}
                 </span>

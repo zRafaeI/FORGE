@@ -122,6 +122,14 @@ src/
     corrigidos estão documentados no topo de `src/lib/content/verses.ts`. O texto
     passou por verificação ortográfica.
 
+27. **PWA sem loja.** `src/app/manifest.ts` (nome, cores, ícones em `public/icons/`,
+    incluindo versões "maskable" para Android e `apple-touch-icon` para iPhone) e
+    `public/sw.js`: páginas com rede primeiro (cada deploy chega na hora), arquivos
+    `/_next/static` com cache primeiro (nomes com hash), pré-cache de todas as telas na
+    instalação. Supabase e `/_vercel/*` nunca passam pelo service worker. Ele só é
+    registrado em produção. Mude `VERSION` em `sw.js` apenas se a lógica dele mudar.
+28. **Analytics só na Vercel** (`process.env.VERCEL`), para não gerar 404 ao rodar localmente.
+
 ## Versões dos dados
 
 O documento salvo tem `schemaVersion`. A v0.2 introduziu a versão 2 (`training`), a

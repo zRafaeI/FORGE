@@ -84,7 +84,8 @@ export function LineChart({ points, title, format, height = 160 }: { points: Lin
         <span>{points[0].label}</span>
         {points.length > 1 && <span>{points[points.length - 1].label}</span>}
       </div>
-      <table className="sr-only">
+      <div className="sr-only">
+      <table>
         <caption>{title}</caption>
         <tbody>
           {points.map((p) => (
@@ -94,6 +95,7 @@ export function LineChart({ points, title, format, height = 160 }: { points: Lin
           ))}
         </tbody>
       </table>
+      </div>
     </figure>
   );
 }

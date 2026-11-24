@@ -99,7 +99,7 @@ function FinanceContent({ today }: { today: string }) {
         <section aria-label="Resumo de saldo" className="grid gap-px overflow-hidden rounded-lg border border-line-soft bg-line-soft md:grid-cols-[1.3fr_1fr_1fr]">
           <div className="bg-surface p-6">
             <p className="text-sm text-muted">{balance.hasOpening ? "Saldo disponível estimado" : "Resultado registrado"}</p>
-            <p className={cn("type-display num mt-3 text-[2.4rem]", balance.available < 0 && "text-warn")}>{formatMoney(balance.available)}</p>
+            <p className={cn("type-display num mt-3 whitespace-nowrap text-[2rem] xl:text-[2.4rem]", balance.available < 0 && "text-warn")}>{formatMoney(balance.available)}</p>
             <p className="mt-3 text-xs leading-relaxed text-faint">
               {balance.hasOpening
                 ? "Saldo inicial + entradas − despesas − valores guardados em metas."
@@ -179,7 +179,7 @@ function FinanceContent({ today }: { today: string }) {
               }
             />
           ) : (
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-12">
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-12">
               <div>
                 {txs.length === 0 ? (
                   <p className="py-4 text-sm text-muted">Nenhum lançamento neste mês.</p>
