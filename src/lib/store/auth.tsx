@@ -41,7 +41,13 @@ export function authMessage(e: unknown): string {
   if (code === "same_password") return "A nova senha precisa ser diferente da anterior.";
   if (code.startsWith("over_") || msg.includes("rate limit")) return "Muitas tentativas seguidas. Aguarde um minuto e tente de novo.";
   if (code === "validation_failed" || msg.includes("invalid email") || msg.includes("unable to validate email")) return "Confira o e-mail digitado.";
-  if (msg.includes("fetch") || msg.includes("network")) return "Sem conexão com o servidor. Verifique a internet.";
+  const name = (err as { name?: string }).name ?? "";
+  if (
+    name === "AuthRetryableFetchError" ||
+    (err as { status?: number }).status === 0 ||
+    ["fetch", "network", "load failed", "internet", "connection", "timed out", "offline"].some((t) => msg.includes(t))
+  )
+    return "Sem conexão com o servidor. Confira a internet e tente de novo.";
   return "Não foi possível concluir. Tente de novo em instantes.";
 }
 
@@ -76,19 +82,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(stored);
       setReady(true);
     }
-    sb.auth.getSession().then(({ data }) => {
-      const next = toUser(data.session?.user);
+    const apply = (session: { user?: { id: string; email?: string } | null } | null) => {
+      const next = toUser(session?.user);
+      // Mantém o mesmo objeto quando o usuário não mudou (renovação de token não reinicia o app).
       setUser((prev) => (prev?.id === next?.id && prev?.email === next?.email ? prev : next));
       setReady(true);
+    };
+    // Sem sessão por falha de rede (sinal fraco ao renovar o login) não é sair da conta:
+    // o Supabase mantém a sessão salva e renova sozinho quando a internet voltar.
+    // Só um "SIGNED_OUT" de verdade (ou a sessão sumir do aparelho) volta para a tela de entrar.
+    sb.auth.getSession().then(({ data, error }) => {
+      if (!data.session && error && storedSessionUser()) return setReady(true);
+      apply(data.session);
     });
     const { data } = sb.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") setRecovering(true);
-      // Mantém o mesmo objeto quando o usuário não mudou (renovação de token não reinicia o app).
-      setUser((prev) => {
-        const next = toUser(session?.user);
-        return prev?.id === next?.id && prev?.email === next?.email ? prev : next;
-      });
-      setReady(true);
+      if (!session && event !== "SIGNED_OUT" && storedSessionUser()) return setReady(true);
+      apply(session);
     });
     return () => data.subscription.unsubscribe();
   }, []);

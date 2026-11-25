@@ -150,7 +150,9 @@ src/
     - service worker: telas esperam a rede no máximo 2,5 s (abrir) e 1,5 s (dados de troca de tela); depois usam a cópia
       guardada e atualizam o cache quando a resposta chegar;
     - login: com sessão salva no aparelho, o app abre na hora e o Supabase confirma em seguida;
-    - dados: com cópia no aparelho, espera o servidor no máximo 1,5 s; a versão do servidor chega depois, se for nova.
+    - dados: com cópia no aparelho, espera o servidor no máximo 1,5 s; a versão do servidor chega depois, se for nova;
+    - falha de rede ao renovar o login não desloga: só um `SIGNED_OUT` real (ou a sessão sumir do aparelho) volta
+      para a tela de entrar; erros de rede de qualquer navegador (inclusive "Load failed" do iPhone) viram "Sem conexão".
 
 ## Versões dos dados
 
