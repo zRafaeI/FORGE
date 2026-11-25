@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Landing } from "@/features/landing/landing";
 import { AuthProvider, useAuth } from "@/lib/store/auth";
 import { ForgeProvider } from "@/lib/store/forge-store";
 import { ToastProvider } from "@/components/ui/feedback";
@@ -10,8 +11,15 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Wordmark } from "@/components/layout/logo";
 import { AuthScreen, NewPasswordScreen } from "@/features/auth/auth-screen";
 
+function isStandalone() {
+  return (
+    typeof window !== "undefined" &&
+    (window.matchMedia?.("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true)
+  );
+}
+
 /** Páginas que qualquer pessoa pode ler sem entrar na conta. */
-const PUBLIC_PATHS = ["/privacidade"];
+const PUBLIC_PATHS = ["/privacidade", "/apoiar"];
 
 function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -20,7 +28,7 @@ function PublicLayout({ children }: { children: ReactNode }) {
         <Link href="/" aria-label="FORGE, ir para o início">
           <Wordmark />
         </Link>
-        <Link href="/" className="text-sm text-muted hover:text-ink">
+        <Link href="/entrar" className="text-sm text-muted hover:text-ink">
           Entrar no FORGE
         </Link>
       </header>
@@ -33,6 +41,8 @@ function AuthGate({ children }: { children: ReactNode }) {
   const { mode, ready, user, recovering } = useAuth();
   const pathname = usePathname();
   if (mode === "cloud" && !user && PUBLIC_PATHS.includes(pathname)) return <PublicLayout>{children}</PublicLayout>;
+  // Visitante no endereço principal vê a apresentação (no app instalado, vai direto para entrar).
+  if (mode === "cloud" && ready && !user && pathname === "/" && !isStandalone()) return <Landing />;
   if (mode === "cloud") {
     if (!ready)
       return (

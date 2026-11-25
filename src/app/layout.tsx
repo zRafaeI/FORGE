@@ -6,8 +6,17 @@ import { Providers } from "./providers";
 import { ServiceWorker } from "@/components/layout/service-worker";
 
 export const metadata: Metadata = {
-  title: { default: "FORGE", template: "%s | FORGE" },
-  description: "Sistema pessoal de disciplina, rotina e evolução.",
+  metadataBase: new URL("https://forge-seven-psi.vercel.app"),
+  title: { default: "FORGE · Disciplina não é dom. É forja.", template: "%s | FORGE" },
+  description: "Rotina, hábitos, treino, água, estudos, fé e finanças num app só. Grátis, sem anúncio e sem culpa.",
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "FORGE",
+    title: "FORGE · Disciplina não é dom. É forja.",
+    description: "Rotina, hábitos, treino, água, estudos, fé e finanças num app só. Grátis, sem anúncio e sem culpa.",
+  },
+  twitter: { card: "summary_large_image" },
   applicationName: "FORGE",
   icons: {
     icon: [

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { MailCheck } from "lucide-react";
 import { z } from "zod";
 import { authMessage, useAuth } from "@/lib/store/auth";
@@ -30,6 +31,12 @@ function Shell({ children }: { children: React.ReactNode }) {
 export function AuthScreen() {
   const { signIn, signUp, sendReset } = useAuth();
   const [mode, setMode] = useState<Mode>("entrar");
+  const pathname = usePathname();
+  // Vindo da apresentação com "Começar grátis" (?modo=criar), abre direto em Criar conta.
+  // Lido depois da navegação, quando o endereço já mudou.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("modo") === "criar") setMode("criar");
+  }, [pathname]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
