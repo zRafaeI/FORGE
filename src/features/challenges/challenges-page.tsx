@@ -191,12 +191,12 @@ function ChallengeView({ challenge: c, data, today }: { challenge: JoinedChallen
           {phase === "upcoming" ? (
             <p className="type-display text-[2.2rem] leading-none sm:text-[2.8rem]">
               Começa em {diffDays(today, c.startDate)} dia{diffDays(today, c.startDate) > 1 ? "s" : ""}
-              <span className="mt-3 block font-sans text-base font-normal text-muted [font-stretch:100%]">{formatLongDate(c.startDate)}</span>
+              <span className="mt-3 block font-sans text-base font-normal tracking-normal normal-case text-muted [font-stretch:100%]">{formatLongDate(c.startDate)}</span>
             </p>
           ) : phase === "ended" ? (
             <p className="type-display text-[2.2rem] leading-none sm:text-[2.8rem]">
               {done} de {c.days} dias completos
-              <span className="mt-3 block font-sans text-base font-normal text-muted [font-stretch:100%]">
+              <span className="mt-3 block font-sans text-base font-normal tracking-normal normal-case text-muted [font-stretch:100%]">
                 O desafio terminou em {formatLongDate(endDate(c)).toLowerCase()}. Obrigado por participar.
               </span>
             </p>
