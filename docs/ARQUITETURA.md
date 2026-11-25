@@ -137,6 +137,9 @@ src/
     - aparelhos com push ativo não repetem o aviso localmente; com o app aberto e em foco, o service worker repassa o lembrete para um aviso dentro do app;
     - aparelhos sem push avisam o servidor (`forge_note_water_reminder`) quando mostram um lembrete, para não repetir em outro aparelho;
     - sair da conta remove a inscrição deste aparelho.
+30. **Apoio via Pix** (`/apoiar`): o código copia e cola é gerado no app (`lib/logic/pix.ts`, BR Code estático com CRC16),
+    sem serviço de pagamento. Chave, nome e cidade ficam em `lib/content/support.ts`. Nada é desbloqueado por apoiar;
+    "Já apoiei" só guarda um agradecimento neste aparelho.
 
 ## Versões dos dados
 

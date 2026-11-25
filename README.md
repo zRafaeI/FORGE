@@ -87,6 +87,8 @@ Outros comandos:
   sair. Dados salvos no navegador e sincronizados com o Supabase, funcionando
   offline, com controle de conflito entre dispositivos. Dados que já existiam no
   navegador vão para a conta no primeiro acesso.
+- **Apoiar o FORGE** *(novo na v0.9)*: página discreta com Pix (QR Code e copia e cola gerados no próprio app,
+  no padrão BR Code do Banco Central). O app continua 100% gratuito; o apoio não libera nada a mais.
 - **Lembrete de água como notificação** *(novo na v0.9)*: chega com o som do celular mesmo com o FORGE fechado
   (Android, computador e iPhone com o app instalado). Configuração em [docs/SUPABASE.md](docs/SUPABASE.md).
 - **App instalável (PWA)** *(v0.8)*: instala direto do navegador, sem loja e

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Cloud, Download, HardDrive, LogOut, Upload } from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, Cloud, Download, HardDrive, Heart, LogOut, Upload } from "lucide-react";
 import { CATEGORIES } from "@/lib/domain/categories";
 import { CATEGORY_IDS, type CategoryId } from "@/lib/domain/types";
 import { fieldErrors, profileInputSchema } from "@/lib/domain/schemas";
@@ -166,6 +167,14 @@ export function SettingsPage() {
             </div>
           )}
           <InstallSection />
+          <Link href="/apoiar" className="surface group flex items-center gap-4 rounded-lg p-5 transition-colors hover:border-[#3b443b]">
+            <Heart size={20} className="shrink-0 text-accent" aria-hidden />
+            <div className="min-w-0 flex-1 text-sm leading-relaxed">
+              <p>Apoiar o FORGE</p>
+              <p className="mt-1 text-muted">O app é gratuito. Se quiser, você pode contribuir com qualquer valor pelo Pix.</p>
+            </div>
+            <ChevronRight size={17} className="shrink-0 text-faint transition-colors group-hover:text-ink" aria-hidden />
+          </Link>
           <div className="flex flex-wrap gap-2">
             <Button icon={<Download size={16} />} onClick={download}>
               Exportar backup
