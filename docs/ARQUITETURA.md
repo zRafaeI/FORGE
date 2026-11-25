@@ -140,6 +140,9 @@ src/
 30. **Apoio via Pix** (`/apoiar`): o código copia e cola é gerado no app (`lib/logic/pix.ts`, BR Code estático com CRC16),
     sem serviço de pagamento. Chave, nome e cidade ficam em `lib/content/support.ts`. Nada é desbloqueado por apoiar;
     "Já apoiei" só guarda um agradecimento neste aparelho.
+31. **Sugestões** (`forge_feedback`): envio só pela função `forge_send_feedback` (5 por pessoa a cada 24 h; e-mail
+    só com consentimento). A tabela não tem políticas de RLS: ninguém lê pelo app. O aviso ao dono sai na mesma
+    rodada do agendador dos lembretes (`/api/push/water`), para os aparelhos da conta em `admin_email`.
 
 ## Versões dos dados
 

@@ -146,7 +146,7 @@ export function SupportPage() {
                   onClick={() => setChoice(o.value)}
                   className={cn(
                     "h-9 rounded-md border px-3 text-[13px] whitespace-nowrap transition-colors",
-                    active ? "border-accent/60 bg-accent-deep/25 text-ink" : "border-line text-muted hover:border-[#3b443b] hover:text-ink",
+                    active ? "border-accent bg-accent-deep/45 text-ink" : "border-line text-muted hover:border-[#3b443b] hover:text-ink",
                   )}
                 >
                   {o.label}

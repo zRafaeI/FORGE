@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import * as webpush from "web-push";
 import { waterPushFor, type PushNutrition } from "@/lib/logic/water-push";
 
@@ -95,5 +95,54 @@ export async function POST(req: Request) {
   );
 
   if (sent.length || gone.length) await db.rpc("forge_push_done", { p_secret: secret, p_sent: sent, p_gone: gone });
-  return Response.json({ checked: jobs.targets.length, sent: sent.length, delivered, removed: gone.length });
+
+  // Mensagens novas do botão de sugestões: avisa o dono do app.
+  const feedback = await notifyFeedback(db, secret, vapid);
+
+  return Response.json({ checked: jobs.targets.length, sent: sent.length, delivered, removed: gone.length, feedback });
+}
+
+interface FeedbackJobs {
+  pending: { id: number; kind: "sugestao" | "problema" | "elogio"; message: string }[];
+  subscriptions: { endpoint: string; p256dh: string; auth: string }[];
+}
+
+const FEEDBACK_TITLE = { sugestao: "💡 Nova sugestão no FORGE", problema: "🐞 Novo problema relatado no FORGE", elogio: "💚 Novo elogio no FORGE" };
+
+async function notifyFeedback(
+  db: SupabaseClient,
+  secret: string,
+  vapid: { subject: string; publicKey: string; privateKey: string },
+): Promise<number> {
+  const { data, error } = await db.rpc("forge_feedback_jobs", { p_secret: secret });
+  if (error || !data) return 0; // feedback.sql ainda não foi rodado
+  const jobs = data as FeedbackJobs;
+  if (!jobs.pending.length || !jobs.subscriptions.length) return 0;
+
+  const one = jobs.pending.length === 1 ? jobs.pending[0] : null;
+  const payload = JSON.stringify({
+    title: one ? FEEDBACK_TITLE[one.kind] : `📬 ${jobs.pending.length} mensagens novas no FORGE`,
+    body: one ? one.message : jobs.pending.map((p) => p.message).join(" · ").slice(0, 160),
+    tag: "forge-feedback",
+    url: "https://supabase.com/dashboard/project/fmtcpylfrrjhjcrwfyai/editor",
+    kind: "feedback",
+  });
+  let ok = false;
+  await Promise.all(
+    jobs.subscriptions.map(async (s) => {
+      try {
+        await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, {
+          vapidDetails: vapid,
+          TTL: 24 * 60 * 60,
+          urgency: "normal",
+          topic: "forge-feedback",
+        });
+        ok = true;
+      } catch (err) {
+        console.error("push: falha ao avisar sugestão", (err as { statusCode?: number }).statusCode ?? "", (err as Error).message);
+      }
+    }),
+  );
+  if (ok) await db.rpc("forge_feedback_notified", { p_secret: secret, p_ids: jobs.pending.map((p) => p.id) });
+  return ok ? jobs.pending.length : 0;
 }

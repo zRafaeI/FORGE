@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { AlertTriangle, Heart, MoreHorizontal, X } from "lucide-react";
+import { AlertTriangle, Heart, MessageSquarePlus, MoreHorizontal, X } from "lucide-react";
+import { FeedbackDialog, feedbackAvailable, OPEN_FEEDBACK_EVENT } from "@/features/feedback/feedback-dialog";
 import { Dialog } from "@/components/ui/dialog";
 import { useForge } from "@/lib/store/forge-store";
 import { OnboardingFlow } from "@/features/onboarding/onboarding-flow";
@@ -19,6 +20,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => setMoreOpen(false), [pathname]);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  useEffect(() => {
+    const open = () => setFeedbackOpen(true);
+    window.addEventListener(OPEN_FEEDBACK_EVENT, open);
+    return () => window.removeEventListener(OPEN_FEEDBACK_EVENT, open);
+  }, []);
 
   if (status === "loading") return <LoadingScreen />;
   if (status === "error" && !data.profile)
@@ -90,11 +97,21 @@ export function AppShell({ children }: { children: ReactNode }) {
             </p>
           )}
         </div>
+        {feedbackAvailable && (
+          <button
+            type="button"
+            onClick={() => setFeedbackOpen(true)}
+            className="mt-2 flex h-10 items-center gap-3 rounded-md px-2.5 text-sm text-muted transition-colors hover:bg-surface hover:text-ink"
+          >
+            <MessageSquarePlus size={17} />
+            Enviar sugestão
+          </button>
+        )}
         <Link
           href="/apoiar"
           aria-current={isActive("/apoiar") ? "page" : undefined}
           className={cn(
-            "mt-2 flex h-10 items-center gap-3 rounded-md px-2.5 text-sm transition-colors",
+            "flex h-10 items-center gap-3 rounded-md px-2.5 text-sm transition-colors",
             isActive("/apoiar") ? "bg-surface-2 text-ink" : "text-muted hover:bg-surface hover:text-ink",
           )}
         >
@@ -206,6 +223,19 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Heart size={18} className="text-accent" />
             Apoiar o FORGE
           </Link>
+          {feedbackAvailable && (
+            <button
+              type="button"
+              onClick={() => {
+                setMoreOpen(false);
+                setFeedbackOpen(true);
+              }}
+              className="flex h-12 items-center gap-3 rounded-md px-3 text-left text-[15px] text-muted hover:bg-surface-2 hover:text-ink"
+            >
+              <MessageSquarePlus size={18} className="text-accent" />
+              Enviar sugestão
+            </button>
+          )}
           {upcoming.length > 0 && <p className="mt-5 mb-1 px-3 text-xs text-faint">Chegando nas próximas versões</p>}
           {upcoming.map((n) => (
             <span key={n.href} aria-disabled="true" className="flex h-10 items-center gap-3 px-3 text-sm text-faint">
@@ -215,6 +245,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
       </Dialog>
+      {feedbackAvailable && <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} page={pathname} />}
     </div>
   );
 }

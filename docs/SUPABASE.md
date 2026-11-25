@@ -22,6 +22,13 @@ rodado de novo sem problema.
 3. Para conferir: **Integrations → Cron → Jobs** mostra `forge-water-push`, e o histórico de execuções.
 4. Se o endereço do site mudar, troque a URL no fim do `push.sql` e rode só o trecho do `cron.schedule`.
 
+## 1c. Sugestões dos usuários (uma vez)
+
+1. No **SQL Editor**, rode [`supabase/feedback.sql`](../supabase/feedback.sql) (depois do `push.sql`).
+2. As mensagens aparecem em **Table Editor → forge_feedback**. A coluna `read` serve para você marcar o que já leu.
+3. Quem recebe o aviso por notificação é a conta com o e-mail em `forge_private.config` (`admin_email`),
+   desde que tenha ativado as notificações em algum aparelho (Alimentação → Água hoje).
+
 ## 2. Endereços de retorno (links de e-mail)
 
 Em **Authentication → URL Configuration**:

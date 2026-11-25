@@ -12,7 +12,7 @@
  *
  * Mude VERSION só quando a lógica deste arquivo mudar; o conteúdo do app se atualiza sozinho.
  */
-const VERSION = "v2";
+const VERSION = "v3";
 const PAGES = `forge-pages-${VERSION}`;
 const ASSETS = `forge-assets-${VERSION}`;
 
@@ -139,9 +139,9 @@ self.addEventListener("push", (event) => {
       const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
       const visible = windows.filter((c) => c.visibilityState === "visible");
       for (const c of visible) c.postMessage({ type: "forge-push", payload });
-      // Com o FORGE aberto e em foco, o aviso aparece dentro do app.
+      // Lembrete de água com o FORGE aberto e em foco: o aviso aparece dentro do app.
       // No iPhone a notificação é sempre exibida (o sistema exige).
-      if (!IOS && windows.some((c) => c.focused)) return;
+      if (payload.kind === "water" && !IOS && windows.some((c) => c.focused)) return;
       await self.registration.showNotification(title, {
         body: payload.body || "",
         tag: payload.tag || "forge",
@@ -161,6 +161,11 @@ self.addEventListener("notificationclick", (event) => {
   event.waitUntil(
     (async () => {
       const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      // Link externo (ex.: painel do Supabase): abre em nova janela.
+      if (new URL(target).origin !== self.location.origin) {
+        await self.clients.openWindow(target);
+        return;
+      }
       const existing = windows.find((c) => new URL(c.url).origin === self.location.origin);
       if (existing) {
         await existing.focus();
