@@ -87,6 +87,80 @@ function PhoneVideo({ className }: { className?: string }) {
   );
 }
 
+/* ---------- Telas do app (no celular, deslizando para o lado) ---------- */
+
+const SCREENS = [
+  { src: "/landing/habitos.webp", name: "Hábitos", alt: "Tela de Hábitos do FORGE", cap: "Hábitos com sequência. Descanso não quebra nada." },
+  { src: "/landing/agua.webp", name: "Água", alt: "Cartão de água do FORGE com a meta do dia e lembretes", cap: "Água com meta e lembrete, mesmo com o app fechado." },
+  { src: "/landing/fe.webp", name: "Fé e propósito", alt: "Tela de Fé e propósito com o versículo do dia", cap: "Um versículo novo por dia, se você quiser." },
+];
+
+function ScreensStrip() {
+  const track = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+
+  // Qual tela está mais perto do centro (só faz diferença no celular, onde a fileira rola).
+  function onScroll() {
+    const el = track.current;
+    if (!el) return;
+    const center = el.scrollLeft + el.clientWidth / 2;
+    let best = 0;
+    let dist = Infinity;
+    Array.from(el.children).forEach((child, i) => {
+      const c = child as HTMLElement;
+      const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - center);
+      if (d < dist) {
+        dist = d;
+        best = i;
+      }
+    });
+    setActive(best);
+  }
+
+  function go(i: number) {
+    const el = track.current;
+    const child = el?.children[i] as HTMLElement | undefined;
+    if (!el || !child) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollTo({ left: child.offsetLeft - (el.clientWidth - child.offsetWidth) / 2, behavior: reduce ? "auto" : "smooth" });
+  }
+
+  return (
+    <div className="mt-16">
+      <p className="mb-4 text-[13px] text-faint sm:hidden" aria-hidden>
+        Deslize para o lado para ver mais telas
+      </p>
+      <div
+        ref={track}
+        onScroll={onScroll}
+        className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-5 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
+        aria-label="Telas do FORGE"
+      >
+        {SCREENS.map((s) => (
+          <figure key={s.src} className="w-[76%] max-w-[320px] shrink-0 snap-center sm:w-auto sm:max-w-none">
+            <Phone src={s.src} alt={s.alt} />
+            <figcaption className="mt-4 text-sm leading-relaxed text-muted">{s.cap}</figcaption>
+          </figure>
+        ))}
+      </div>
+      <div className="mt-5 flex justify-center gap-2 sm:hidden">
+        {SCREENS.map((s, i) => (
+          <button
+            key={s.src}
+            type="button"
+            onClick={() => go(i)}
+            aria-label={`Ver tela ${i + 1} de ${SCREENS.length}: ${s.name}`}
+            aria-current={i === active ? "true" : undefined}
+            className="flex h-6 items-center px-1"
+          >
+            <span className={cn("block h-1.5 rounded-full transition-all", i === active ? "w-6 bg-accent" : "w-1.5 bg-surface-3")} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ---------- A régua do dia, ao vivo ---------- */
 
 const RULER_START = 5 * 60;
@@ -228,18 +302,7 @@ export function Landing() {
               </div>
             ))}
           </div>
-          <div className="mt-16 -mx-5 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
-            {[
-              { src: "/landing/habitos.webp", alt: "Tela de Hábitos do FORGE", cap: "Hábitos com sequência. Descanso não quebra nada." },
-              { src: "/landing/agua.webp", alt: "Cartão de água do FORGE com a meta do dia e lembretes", cap: "Água com meta e lembrete, mesmo com o app fechado." },
-              { src: "/landing/fe.webp", alt: "Tela de Fé e propósito com o versículo do dia", cap: "Um versículo novo por dia, se você quiser." },
-            ].map((s) => (
-              <figure key={s.src} className="w-[68%] shrink-0 snap-center sm:w-auto">
-                <Phone src={s.src} alt={s.alt} />
-                <figcaption className="mt-4 text-sm leading-relaxed text-muted">{s.cap}</figcaption>
-              </figure>
-            ))}
-          </div>
+          <ScreensStrip />
         </section>
 
         {/* Princípios */}
