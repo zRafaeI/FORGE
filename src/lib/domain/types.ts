@@ -333,6 +333,41 @@ export interface FinanceData {
 
 export const SCHEMA_VERSION = 4 as const;
 
+/* ---------- Desafios ---------- */
+
+/** Tarefas automáticas se marcam sozinhas com o que a pessoa registra no app; "manual" é um check simples. */
+export type ChallengeTaskKind = "manual" | "water" | "training" | "meals" | "reading" | "study" | "faith";
+
+export interface ChallengeTask {
+  id: string;
+  label: string;
+  kind: ChallengeTaskKind;
+  /** Para "meals": quantas refeições registradas contam como feito (padrão 1). */
+  target?: number;
+}
+
+/** Cópia do desafio guardada no documento (funciona offline). A fonte é o servidor. */
+export interface JoinedChallenge {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  startDate: DateKey;
+  days: number;
+  tasks: ChallengeTask[];
+  joinedAt: string;
+}
+
+export interface ChallengeData {
+  joined: JoinedChallenge[];
+  /** Tarefas marcadas à mão: desafio → dia → ids das tarefas. */
+  checks: Record<string, Record<DateKey, string[]>>;
+  /** Foto opcional do dia (caminho no armazenamento privado): desafio → dia → caminho. */
+  photos: Record<string, Record<DateKey, string>>;
+}
+
+export const EMPTY_CHALLENGES: ChallengeData = { joined: [], checks: {}, photos: {} };
+
 export interface ForgeData {
   schemaVersion: typeof SCHEMA_VERSION;
   profile: Profile | null;
@@ -344,6 +379,8 @@ export interface ForgeData {
   nutrition: NutritionData;
   faith: FaithData;
   finance: FinanceData;
+  /** Opcional: só existe para quem entrou em algum desafio. */
+  challenges?: ChallengeData;
 }
 
 export const EMPTY_STUDY: StudyData = { subjects: [], sessions: [], books: [], readingLogs: [], timer: null };

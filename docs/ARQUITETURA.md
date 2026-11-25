@@ -201,3 +201,13 @@ servidor Supabase simulado (cadastro, senha errada, dois dispositivos, conflito,
 offline, troca de conta, recuperação de senha). A versão 0.1 também foi verificada ponta a ponta num navegador real (onboarding,
 criação com validação, conclusão, persistência após recarregar, descanso, edição,
 exclusão com desfazer, desktop e celular).
+
+34. **Desafios**: a definição (nome, datas, tarefas, código) e quem participa ficam no servidor; o que a pessoa marcou fica
+    no documento dela (`challenges`, opcional no schema v4), então funciona offline. O app envia ao servidor só
+    "feitas/total" de hoje e de ontem (`forge_challenge_report`) para o progresso do grupo, sem nomes.
+    - Tarefas automáticas (`autoDone`) olham os registros do próprio app: água (meta), treino, refeições (quantidade),
+      leitura, estudo e fé. Manual é um check.
+    - Calendário sem "falhou": dia passado sem nada fica só vazio. A pessoa pode completar dias que já passaram.
+    - Fotos: bucket privado, caminho `<usuário>/<desafio>/<dia>.jpg`, reduzidas para 1280 px. Sair do desafio e
+      excluir a conta apagam as fotos (pela API de armazenamento, antes de apagar a conta).
+    - Lembrete: entre 19h e 22h no fuso da pessoa, uma vez por dia, só com o dia incompleto (`challengePushFor`).

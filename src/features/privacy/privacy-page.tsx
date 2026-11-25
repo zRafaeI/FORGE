@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/layout/page-header";
 
 /** Página de privacidade em linguagem simples. Pode ser lida com ou sem login. */
 
-export const PRIVACY_UPDATED = "24 de novembro de 2026";
+export const PRIVACY_UPDATED = "25 de novembro de 2026";
 export const PRIVACY_CONTACT = "eurafaelguerra@gmail.com";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -57,6 +57,11 @@ export function PrivacyPage() {
               A mensagem, a tela em que você estava, o tipo de aparelho e a versão do app. O seu e-mail só vai junto se você
               marcar a opção de resposta.
             </Item>
+            <Item title="Desafios">
+              Em quais desafios você entrou e, para o progresso do grupo, só quantas tarefas fez em cada dia. As fotos do
+              check-in são opcionais e ficam numa área privada: no app, só você vê. Outros participantes nunca têm acesso,
+              e quem mantém o FORGE não as consulta.
+            </Item>
             <Item title="Estatísticas de visita">
               Contagem de visitas e páginas mais acessadas, sem cookies e sem identificar quem você é. Servem só para saber se o
               app está sendo útil.
@@ -94,8 +99,8 @@ export function PrivacyPage() {
             <Item title="Corrigir">Tudo o que você cadastrou pode ser editado no próprio app.</Item>
             <Item title="Apagar os registros">Em Configurações → Apagar dados, seus registros são apagados e a conta continua.</Item>
             <Item title="Excluir a conta">
-              Em Configurações → Excluir minha conta, a conta e todos os registros são apagados de vez. Sugestões já enviadas
-              continuam, mas sem nenhuma ligação com você.
+              Em Configurações → Excluir minha conta, a conta, todos os registros e as fotos dos desafios são apagados de vez.
+              Sugestões já enviadas continuam, mas sem nenhuma ligação com você.
             </Item>
           </ul>
         </Section>

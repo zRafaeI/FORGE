@@ -26,6 +26,7 @@ const ROUTES = [
   "/fe",
   "/financas",
   "/evolucao",
+  "/desafios",
   "/configuracoes",
   "/apoiar",
   "/privacidade",

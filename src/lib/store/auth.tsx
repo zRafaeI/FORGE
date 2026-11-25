@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { AuthError } from "@supabase/supabase-js";
 import { getSupabase, supabaseConfigured } from "@/lib/data/supabase-client";
 import { disablePush } from "@/lib/push/client";
+import { removeAllPhotos } from "@/lib/challenges/client";
 import { STORAGE_KEY } from "@/lib/data/local-repository";
 
 export interface AuthUser {
@@ -140,6 +141,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = await supabase.auth.getSession();
     const id = data.session?.user.id;
     await disablePush().catch(() => undefined);
+    // Fotos dos desafios ficam no armazenamento de arquivos: apagadas antes da conta.
+    if (id) await removeAllPhotos(id).catch(() => undefined);
     const { error } = await supabase.rpc("forge_delete_account");
     if (error) throw error;
     // Encerra a sessão só neste aparelho (a conta já não existe) e limpa as cópias locais,

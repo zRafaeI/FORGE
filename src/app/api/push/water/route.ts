@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import * as webpush from "web-push";
 import { waterPushFor, type PushNutrition } from "@/lib/logic/water-push";
+import { challengePushFor, type ChallengePushJob } from "@/lib/logic/challenge-push";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -98,8 +99,10 @@ export async function POST(req: Request) {
 
   // Mensagens novas do botão de sugestões: avisa o dono do app.
   const feedback = await notifyFeedback(db, secret, vapid);
+  // Lembrete do desafio, à noite, para quem ainda não completou o dia.
+  const challenge = await notifyChallenges(db, secret, vapid, now);
 
-  return Response.json({ checked: jobs.targets.length, sent: sent.length, delivered, removed: gone.length, feedback });
+  return Response.json({ checked: jobs.targets.length, sent: sent.length, delivered, removed: gone.length, feedback, challenge });
 }
 
 interface FeedbackJobs {
@@ -145,4 +148,41 @@ async function notifyFeedback(
   );
   if (ok) await db.rpc("forge_feedback_notified", { p_secret: secret, p_ids: jobs.pending.map((p) => p.id) });
   return ok ? jobs.pending.length : 0;
+}
+
+async function notifyChallenges(
+  db: SupabaseClient,
+  secret: string,
+  vapid: { subject: string; publicKey: string; privateKey: string },
+  now: Date,
+): Promise<number> {
+  const { data, error } = await db.rpc("forge_challenge_push_jobs", { p_secret: secret });
+  if (error || !data) return 0; // challenges.sql ainda não foi rodado
+  const reminded: { challengeId: string; userId: string; day: string }[] = [];
+  await Promise.all(
+    (data as ChallengePushJob[]).map(async (job) => {
+      const decision = challengePushFor(job, now);
+      if (!decision.due) return;
+      const payload = JSON.stringify({ title: decision.title, body: decision.body, tag: `forge-challenge-${job.challengeId}`, url: "/desafios", kind: "challenge" });
+      let ok = false;
+      await Promise.all(
+        (job.subscriptions ?? []).map(async (s) => {
+          try {
+            await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, {
+              vapidDetails: vapid,
+              TTL: 2 * 60 * 60,
+              urgency: "normal",
+              topic: "forge-challenge",
+            });
+            ok = true;
+          } catch (err) {
+            console.error("push: falha no lembrete do desafio", (err as { statusCode?: number }).statusCode ?? "", (err as Error).message);
+          }
+        }),
+      );
+      if (ok) reminded.push({ challengeId: job.challengeId, userId: job.userId, day: decision.day });
+    }),
+  );
+  if (reminded.length) await db.rpc("forge_challenge_reminded", { p_secret: secret, p_items: reminded });
+  return reminded.length;
 }

@@ -2,6 +2,7 @@ import {
   BookOpen,
   CalendarClock,
   Dumbbell,
+  Flag,
   HandHeart,
   LayoutGrid,
   LineChart,
@@ -30,6 +31,7 @@ export const NAV: NavItem[] = [
   { href: "/estudos", label: "Estudos", short: "Estudos", icon: BookOpen, available: true },
   { href: "/fe", label: "Fé e propósito", short: "Fé", icon: HandHeart, available: true },
   { href: "/financas", label: "Finanças", short: "Finanças", icon: Wallet, available: true },
+  { href: "/desafios", label: "Desafios", short: "Desafios", icon: Flag, available: true },
   { href: "/evolucao", label: "Evolução", short: "Evolução", icon: LineChart, available: true },
   { href: "/configuracoes", label: "Configurações", short: "Ajustes", icon: Settings, available: true },
 ];

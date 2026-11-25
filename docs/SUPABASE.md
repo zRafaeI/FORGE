@@ -35,6 +35,14 @@ No **SQL Editor**, rode [`supabase/account.sql`](../supabase/account.sql). Ele c
 **Excluir minha conta** (Configurações): apaga o login e, em cascata, os registros, os aparelhos de notificação
 e o estado dos lembretes. Sugestões enviadas ficam, mas sem ligação com a pessoa.
 
+## 1e. Desafios (uma vez)
+
+No **SQL Editor**, rode [`supabase/challenges.sql`](../supabase/challenges.sql) (depois do `account.sql`). Ele cria:
+- as tabelas de desafios, participantes e progresso diário (só números);
+- as funções usadas pelo app e pelo painel `/desafios/admin` (só para a conta em `admin_email`);
+- o lembrete à noite, na mesma rodada do agendador;
+- o bucket privado `challenge-photos`, em que cada pessoa só lê e grava na própria pasta.
+
 ## 2. Endereços de retorno (links de e-mail)
 
 Em **Authentication → URL Configuration**:

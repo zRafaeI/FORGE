@@ -356,6 +356,32 @@ const financeSchema = z.object({
   openingBalanceCents: z.number().int().optional(),
 });
 
+/* ---------- Desafios ---------- */
+
+const challengeTaskSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  kind: z.enum(["manual", "water", "training", "meals", "reading", "study", "faith"]),
+  target: z.number().int().positive().optional(),
+});
+
+export const joinedChallengeSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  startDate: dateKey,
+  days: z.number().int().positive(),
+  tasks: z.array(challengeTaskSchema),
+  joinedAt: z.string(),
+});
+
+const challengesSchema = z.object({
+  joined: z.array(joinedChallengeSchema),
+  checks: z.record(z.string(), z.record(z.string(), z.array(z.string()))),
+  photos: z.record(z.string(), z.record(z.string(), z.string())),
+});
+
 /* ---------- Versões do documento ---------- */
 
 const emptyTraining = () => ({ runs: [], workouts: [], restDays: [] });
@@ -372,6 +398,7 @@ const forgeDataV4 = z.object({
   nutrition: nutritionSchema,
   faith: faithSchema,
   finance: financeSchema,
+  challenges: challengesSchema.optional(),
 });
 const forgeDataV3 = z.object({ ...forgeDataV2Shape, schemaVersion: z.literal(3), study: studySchema, nutrition: nutritionSchema });
 const forgeDataV2 = z.object(forgeDataV2Shape);

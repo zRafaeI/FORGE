@@ -2,8 +2,11 @@
  * Operações puras sobre o documento do usuário. Sem React, sem armazenamento:
  * recebem o estado atual e devolvem o próximo. Testáveis isoladamente.
  */
+import { EMPTY_CHALLENGES } from "@/lib/domain/types";
 import type {
   Activity,
+  ChallengeData,
+  JoinedChallenge,
   CheckStatus,
   DateKey,
   ForgeData,
@@ -534,4 +537,43 @@ export function setOpeningBalance(data: ForgeData, cents: number | undefined): F
 
 export function setWaterReminder(data: ForgeData, reminder: WaterReminder | undefined): ForgeData {
   return withNutrition(data, (n) => ({ ...n, waterReminder: reminder }));
+}
+
+/* ---------- Desafios ---------- */
+
+const challengesOf = (data: ForgeData): ChallengeData => data.challenges ?? EMPTY_CHALLENGES;
+
+/** Entra no desafio ou atualiza a cópia local (nome, datas e tarefas vêm do servidor). */
+export function upsertJoinedChallenge(data: ForgeData, c: Omit<JoinedChallenge, "joinedAt">, now = new Date()): ForgeData {
+  const ch = challengesOf(data);
+  const existing = ch.joined.find((j) => j.id === c.id);
+  const next: JoinedChallenge = { ...c, joinedAt: existing?.joinedAt ?? now.toISOString() };
+  return {
+    ...data,
+    challenges: { ...ch, joined: existing ? ch.joined.map((j) => (j.id === c.id ? next : j)) : [...ch.joined, next] },
+  };
+}
+
+export function leaveChallenge(data: ForgeData, id: string): ForgeData {
+  const ch = challengesOf(data);
+  const checks = { ...ch.checks };
+  const photos = { ...ch.photos };
+  delete checks[id];
+  delete photos[id];
+  return { ...data, challenges: { joined: ch.joined.filter((j) => j.id !== id), checks, photos } };
+}
+
+export function setChallengeCheck(data: ForgeData, id: string, date: DateKey, taskId: string, on: boolean): ForgeData {
+  const ch = challengesOf(data);
+  const day = ch.checks[id]?.[date] ?? [];
+  const nextDay = on ? [...new Set([...day, taskId])] : day.filter((t) => t !== taskId);
+  return { ...data, challenges: { ...ch, checks: { ...ch.checks, [id]: { ...ch.checks[id], [date]: nextDay } } } };
+}
+
+export function setChallengePhoto(data: ForgeData, id: string, date: DateKey, path: string | null): ForgeData {
+  const ch = challengesOf(data);
+  const forChallenge = { ...ch.photos[id] };
+  if (path) forChallenge[date] = path;
+  else delete forChallenge[date];
+  return { ...data, challenges: { ...ch, photos: { ...ch.photos, [id]: forChallenge } } };
 }

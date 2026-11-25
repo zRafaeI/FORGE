@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
+import { ChallengeCard } from "@/features/challenges/challenge-card";
 import { BookOpen, CalendarPlus, Dumbbell, HandHeart, Plus, Repeat, UtensilsCrossed, type LucideIcon } from "lucide-react";
 import type { CategoryId } from "@/lib/domain/types";
 import { useForge } from "@/lib/store/forge-store";
@@ -191,6 +192,7 @@ function DashboardContent({ now }: { now: Date }) {
 
         {/* Coluna de progresso */}
         <aside className="flex flex-col gap-6">
+          <ChallengeCard data={data} today={today} />
           <section className="surface rounded-lg p-5" aria-labelledby="progress-title">
             <h2 id="progress-title" className="type-title text-[15px]">
               Progresso do dia

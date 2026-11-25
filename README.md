@@ -28,7 +28,7 @@ Outros comandos:
   [`docs/SUPABASE.md`](docs/SUPABASE.md).
 - **Sem Supabase** (sem `.env.local`): tudo fica só neste navegador, sem conta.
 
-## O que está pronto (v0.9)
+## O que está pronto (v0.10)
 
 - **Onboarding** em 4 etapas: nome, horários de acordar/dormir, áreas de foco e
   escolha dos primeiros hábitos (sugestões por área + hábitos personalizados).
@@ -87,7 +87,10 @@ Outros comandos:
   sair. Dados salvos no navegador e sincronizados com o Supabase, funcionando
   offline, com controle de conflito entre dispositivos. Dados que já existiam no
   navegador vão para a conta no primeiro acesso.
-- **Privacidade e excluir conta** *(novo na v0.9)*: página `/privacidade` em linguagem simples (aberta sem login)
+- **Desafios** *(novo na v0.10)*: entrar com código, dia X de N, lista do dia com tarefas que se marcam sozinhas
+  (água, treino, refeições, leitura, estudo, fé) ou à mão, calendário sem "falhou", foto opcional privada, progresso do
+  grupo sem nomes e lembrete à noite. Painel do dono do app em `/desafios/admin` (`supabase/challenges.sql`).
+- **Privacidade e excluir conta** *(v0.9)*: página `/privacidade` em linguagem simples (aberta sem login)
   e exclusão da conta com tudo ligado a ela, em Configurações (`supabase/account.sql`).
 - **Enviar sugestão** *(novo na v0.9)*: sugestões, problemas e elogios direto pelo app, com limite diário e
   aviso por notificação para o dono do app. Mensagens em `forge_feedback` (ver [docs/SUPABASE.md](docs/SUPABASE.md)).
