@@ -27,7 +27,7 @@ revoke all on public.forge_feedback from anon, authenticated;
 create index if not exists forge_feedback_pending on public.forge_feedback (created_at) where notified_at is null;
 
 -- Quem recebe o aviso de mensagem nova (o dono do app). Troque o e-mail se precisar.
-insert into forge_private.config (key, value) values ('admin_email', 'eurafaelguerra@gmail.com')
+insert into forge_private.config (key, value) values ('admin_email', 'playeramazing123@gmail.com')
 on conflict (key) do nothing;
 
 create or replace function public.forge_send_feedback(
