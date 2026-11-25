@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { track } from "@vercel/analytics";
 import { Wordmark } from "@/components/layout/logo";
 import { cn } from "@/components/ui/cn";
@@ -41,6 +41,48 @@ function Phone({ src, alt, className, priority }: { src: string; alt: string; cl
         decoding="async"
         className="block h-auto w-full rounded-[1.9rem]"
       />
+    </div>
+  );
+}
+
+/** Vídeo curto do app em uso, em loop e sem som. Com "reduzir movimento" ligado, fica a imagem parada. */
+function PhoneVideo({ className }: { className?: string }) {
+  const [still, setStill] = useState(false);
+  const ref = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => {
+      setStill(media.matches);
+      if (!media.matches) void ref.current?.play().catch(() => undefined);
+      else ref.current?.pause();
+    };
+    apply();
+    media.addEventListener("change", apply);
+    return () => media.removeEventListener("change", apply);
+  }, []);
+
+  const label = "O FORGE em uso: concluindo um compromisso, marcando hábitos até o dia chegar a 100% e registrando água.";
+  return (
+    <div className={cn("rounded-[2.4rem] border border-line bg-[#0b0d0b] p-2.5 shadow-[0_40px_80px_-40px_rgb(0_0_0/0.9)]", className)}>
+      {still ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src="/landing/demo-poster.webp" alt={label} width={390} height={844} className="block h-auto w-full rounded-[1.9rem]" />
+      ) : (
+        <video
+          ref={ref}
+          src="/landing/demo.mp4"
+          poster="/landing/demo-poster.webp"
+          width={390}
+          height={844}
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-label={label}
+          className="block h-auto w-full rounded-[1.9rem] bg-bg"
+        />
+      )}
     </div>
   );
 }
@@ -166,7 +208,7 @@ export function Landing() {
             </div>
             <p className="mt-5 text-[13px] text-faint">Grátis. Abre no navegador e instala no celular, sem loja.</p>
           </div>
-          <Phone src="/landing/dashboard.webp" alt="O Dashboard do FORGE no celular: saudação, régua do dia e compromissos de hoje." priority className="mx-auto w-full max-w-[300px] lg:max-w-none" />
+          <PhoneVideo className="mx-auto w-full max-w-[300px] lg:max-w-none" />
         </section>
 
         <div className="border-y border-line-soft bg-surface/40 py-10">

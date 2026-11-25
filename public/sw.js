@@ -12,7 +12,7 @@
  *
  * Mude VERSION só quando a lógica deste arquivo mudar; o conteúdo do app se atualiza sozinho.
  */
-const VERSION = "v4";
+const VERSION = "v5";
 const PAGES = `forge-pages-${VERSION}`;
 const ASSETS = `forge-assets-${VERSION}`;
 
@@ -135,6 +135,8 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return; // Supabase e afins: direto para a rede
   if (url.pathname.startsWith("/_vercel/") || url.pathname === "/sw.js") return;
+  // Vídeo é pedido em pedaços (Range), principalmente no iPhone: vai direto para a rede.
+  if (request.headers.has("range") || /\.(mp4|webm)$/.test(url.pathname)) return;
 
   if (url.pathname.startsWith("/_next/static/")) {
     event.respondWith(cacheFirst(request, false));
