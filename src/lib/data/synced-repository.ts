@@ -48,7 +48,13 @@ export class SyncedRepository implements ForgeRepository {
     private remote: RemoteDocumentStore,
     private storage: KeyValueStorage,
     private userId: string,
-    private env: { addEventListener?: (t: string, fn: () => void) => void; removeEventListener?: (t: string, fn: () => void) => void; isVisible?: () => boolean } = {},
+    private env: {
+      addEventListener?: (t: string, fn: () => void) => void;
+      removeEventListener?: (t: string, fn: () => void) => void;
+      isVisible?: () => boolean;
+      /** Quanto esperar o servidor ao abrir, quando já há cópia neste aparelho (sinal fraco não trava o app). */
+      loadTimeoutMs?: number;
+    } = {},
   ) {
     const onOnline = () => void this.flush();
     const onFocus = () => {
@@ -129,7 +135,28 @@ export class SyncedRepository implements ForgeRepository {
 
     let remote: { data: unknown; revision: number } | null;
     try {
-      remote = await this.remote.fetch();
+      const pending = this.remote.fetch();
+      if (cached) {
+        // Com cópia local, abre na hora se o servidor demorar; a atualização chega depois.
+        const TIMEOUT = Symbol("timeout");
+        const limit = this.env.loadTimeoutMs ?? 1500;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const first = await Promise.race([
+          pending,
+          new Promise<typeof TIMEOUT>((resolve) => (timer = setTimeout(() => resolve(TIMEOUT), limit))),
+        ]).finally(() => clearTimeout(timer));
+        if (first === TIMEOUT) {
+          this.emit({ type: "status", status: "offline" });
+          pending.then(
+            () => void this.refresh(),
+            () => undefined,
+          );
+          return this.entry.data;
+        }
+        remote = first;
+      } else {
+        remote = await pending;
+      }
     } catch (e) {
       if (cached) {
         this.emit({ type: "status", status: "offline" });

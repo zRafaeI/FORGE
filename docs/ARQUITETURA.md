@@ -146,6 +146,11 @@ src/
 32. **Privacidade e exclusão**: `/privacidade` é a única rota pública (ver `PUBLIC_PATHS` em `providers.tsx`).
     `forge_delete_account` apaga o usuário em `auth.users` (cascata para documento, aparelhos e estado); o app
     desativa as notificações do aparelho antes e limpa as cópias locais depois, inclusive os dados de antes do cadastro.
+33. **Sinal fraco não trava o app** (antes, "sem internet" funcionava, mas rede pendurada ficava carregando):
+    - service worker: telas esperam a rede no máximo 2,5 s (abrir) e 1,5 s (dados de troca de tela); depois usam a cópia
+      guardada e atualizam o cache quando a resposta chegar;
+    - login: com sessão salva no aparelho, o app abre na hora e o Supabase confirma em seguida;
+    - dados: com cópia no aparelho, espera o servidor no máximo 1,5 s; a versão do servidor chega depois, se for nova.
 
 ## Versões dos dados
 

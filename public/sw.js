@@ -12,7 +12,7 @@
  *
  * Mude VERSION só quando a lógica deste arquivo mudar; o conteúdo do app se atualiza sozinho.
  */
-const VERSION = "v3";
+const VERSION = "v4";
 const PAGES = `forge-pages-${VERSION}`;
 const ASSETS = `forge-assets-${VERSION}`;
 
@@ -76,17 +76,38 @@ function pageKey(request, url) {
   return `${url.pathname}${isRsc ? "?__rsc" : ""}`;
 }
 
+/** Quanto esperar a rede antes de usar a cópia guardada (sinal fraco não pode travar o app). */
+const NAVIGATE_TIMEOUT = 2500;
+const DATA_TIMEOUT = 1500;
+
 async function networkFirst(request, url) {
   const cache = await caches.open(PAGES);
   const key = pageKey(request, url);
-  try {
-    const res = await fetch(request);
+  const fallback = async () => (await cache.match(key)) || (request.mode === "navigate" ? await cache.match("/") : undefined);
+
+  const network = fetch(request).then((res) => {
     if (res.ok && res.type === "basic") cache.put(key, res.clone());
     return res;
+  });
+
+  let timer;
+  const timeout = new Promise((resolve) => (timer = setTimeout(() => resolve("timeout"), request.mode === "navigate" ? NAVIGATE_TIMEOUT : DATA_TIMEOUT)));
+  try {
+    const first = await Promise.race([network, timeout]);
+    if (first !== "timeout") return first;
+    // A rede está lenta: mostra a cópia guardada e deixa a resposta atualizar o cache quando chegar.
+    const hit = await fallback();
+    network.catch(() => undefined);
+    if (hit) return hit;
+    // Troca de tela sem cópia dos dados: devolve erro para o app abrir a página inteira, que tem cópia.
+    if (request.mode !== "navigate") return Response.error();
+    return await network;
   } catch (err) {
-    const hit = (await cache.match(key)) || (request.mode === "navigate" ? await cache.match("/") : undefined);
+    const hit = await fallback();
     if (hit) return hit;
     throw err;
+  } finally {
+    clearTimeout(timer);
   }
 }
 

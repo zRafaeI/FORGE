@@ -111,6 +111,49 @@ describe("sincronização", () => {
     expect((server.doc!.data as ForgeData).habits[0].title).toBe("Beber água");
   });
 
+  it("sinal fraco: com cópia no aparelho, abre na hora e atualiza quando o servidor responder", async () => {
+    const server = new FakeServer();
+    const s = memory();
+    const first = new SyncedRepository(server.store(), s, "u1");
+    await first.save(withHabit(await first.load(), "Ler"));
+    await first.flush();
+    // outro aparelho grava uma versão nova enquanto este está sem sinal
+    server.doc = { data: withHabit(server.doc!.data as ForgeData, "Correr"), revision: server.doc!.revision + 1 };
+
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const slow: RemoteDocumentStore = { ...server.store(), fetch: async () => (await gate, server.store().fetch()) };
+    const repo = new SyncedRepository(slow, s, "u1", { loadTimeoutMs: 30 });
+    const events: string[] = [];
+    repo.subscribe((e) => events.push(e.type === "status" ? e.status : e.type));
+
+    const started = Date.now();
+    const opened = await repo.load();
+    expect(Date.now() - started).toBeLessThan(500);
+    expect(opened.habits.map((h) => h.title)).toEqual(["Ler"]);
+    expect(events).toContain("offline");
+
+    release();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(events).toContain("replaced");
+    expect(events.at(-1)).toBe("synced");
+  });
+
+  it("primeiro acesso sem cópia no aparelho continua esperando o servidor", async () => {
+    const server = new FakeServer();
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const slow: RemoteDocumentStore = { ...server.store(), fetch: async () => (await gate, server.store().fetch()) };
+    const repo = new SyncedRepository(slow, memory(), "u1", { loadTimeoutMs: 10 });
+    let done = false;
+    const p = repo.load().then(() => (done = true));
+    await new Promise((r) => setTimeout(r, 40));
+    expect(done).toBe(false);
+    release();
+    await p;
+    expect(done).toBe(true);
+  });
+
   it("várias alterações rápidas viram poucos envios, sempre com a versão mais recente", async () => {
     const server = new FakeServer();
     const repo = new SyncedRepository(server.store(), memory(), "u1");

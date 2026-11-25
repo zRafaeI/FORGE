@@ -45,6 +45,21 @@ export function authMessage(e: unknown): string {
   return "Não foi possível concluir. Tente de novo em instantes.";
 }
 
+/** Usuário da sessão guardada pelo Supabase neste aparelho, sem precisar de rede. */
+function storedSessionUser(): AuthUser | null {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !/^sb-.+-auth-token$/.test(key)) continue;
+      const parsed = JSON.parse(localStorage.getItem(key) ?? "null") as { user?: { id?: string; email?: string } } | null;
+      if (parsed?.user?.id) return { id: parsed.user.id, email: parsed.user.email ?? "" };
+    }
+  } catch {
+    /* sem armazenamento */
+  }
+  return null;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(!supabaseConfigured);
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -54,8 +69,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabaseConfigured) return;
     const sb = getSupabase();
     const toUser = (u: { id: string; email?: string } | null | undefined) => (u ? { id: u.id, email: u.email ?? "" } : null);
+    // Com uma sessão salva neste aparelho, o app abre na hora, mesmo sem internet ou com sinal fraco.
+    // O Supabase confirma (ou renova) a sessão em seguida; se ela não valer mais, volta para o login.
+    const stored = storedSessionUser();
+    if (stored) {
+      setUser(stored);
+      setReady(true);
+    }
     sb.auth.getSession().then(({ data }) => {
-      setUser(toUser(data.session?.user));
+      const next = toUser(data.session?.user);
+      setUser((prev) => (prev?.id === next?.id && prev?.email === next?.email ? prev : next));
       setReady(true);
     });
     const { data } = sb.auth.onAuthStateChange((event, session) => {
