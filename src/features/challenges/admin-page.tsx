@@ -13,7 +13,7 @@ import type { ChallengeTask, ChallengeTaskKind, DateKey } from "@/lib/domain/typ
 import { newId } from "@/lib/store/actions";
 import { addDays, formatShortDate, toDateKey } from "@/lib/logic/dates";
 import { endDate, normalizeCode, phaseOf, TASK_KIND_META } from "@/lib/logic/challenge";
-import { adminChallenges, ChallengeError, isAdmin, saveChallenge, type AdminChallenge, type ChallengeDraft } from "@/lib/challenges/client";
+import { adminChallenges, adminMembers, ChallengeError, isAdmin, saveChallenge, type AdminChallenge, type ChallengeDraft } from "@/lib/challenges/client";
 
 const PRESETS: { label: string; kind: ChallengeTaskKind; target?: number }[] = [
   { label: "Bater a meta de água", kind: "water" },
@@ -117,6 +117,19 @@ function toDraft(c: AdminChallenge): ChallengeDraft {
 
 function AdminCard({ c, today, onEdit, onChanged }: { c: AdminChallenge; today: DateKey; onEdit: () => void; onChanged: () => void }) {
   const toast = useToast();
+  const [members, setMembers] = useState<{ name: string; joinedAt: string }[] | null>(null);
+  const [membersOpen, setMembersOpen] = useState(false);
+
+  async function openMembers() {
+    setMembersOpen(true);
+    setMembers(null);
+    try {
+      setMembers(await adminMembers(c.id));
+    } catch (e) {
+      setMembersOpen(false);
+      toast({ message: e instanceof ChallengeError ? e.message : "Não foi possível carregar os participantes." });
+    }
+  }
   const phase = phaseOf({ ...c, joinedAt: "" }, today);
   const days = Array.from({ length: c.days }, (_, i) => addDays(c.startDate, i));
   const byDay = new Map(c.daily.map((d) => [d.day, d.completed]));
@@ -193,14 +206,40 @@ function AdminCard({ c, today, onEdit, onChanged }: { c: AdminChallenge; today: 
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button size="sm" onClick={onEdit}>
           Editar
         </Button>
+        {c.members > 0 && (
+          <Button size="sm" variant="secondary" onClick={() => void openMembers()}>
+            Ver participantes
+          </Button>
+        )}
         <Button size="sm" variant="ghost" onClick={() => void toggleArchive()}>
           {c.archived ? "Reativar" : "Arquivar"}
         </Button>
       </div>
+
+      <Dialog
+        open={membersOpen}
+        onClose={() => setMembersOpen(false)}
+        title={`Participantes · ${c.name}`}
+        description="Só você vê esta lista. O nome é o que cada pessoa colocou no perfil do FORGE."
+        size="sm"
+      >
+        {members === null ? (
+          <p className="text-sm text-muted">Carregando…</p>
+        ) : (
+          <ol className="flex flex-col divide-y divide-line-soft">
+            {members.map((m, i) => (
+              <li key={`${m.name}-${i}`} className="flex items-baseline justify-between gap-4 py-2.5 text-[15px]">
+                <span className="min-w-0 truncate">{m.name}</span>
+                <span className="shrink-0 text-[12px] text-faint">entrou {formatShortDate(toDateKey(new Date(m.joinedAt)))}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </Dialog>
     </li>
   );
 }

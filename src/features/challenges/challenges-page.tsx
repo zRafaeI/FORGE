@@ -169,6 +169,9 @@ function JoinCard({ compact }: { compact?: boolean }) {
           {error}
         </p>
       )}
+      <p className="text-[12px] leading-relaxed text-faint">
+        Quem organiza o desafio vê seu nome na lista de participantes. Os outros participantes não veem.
+      </p>
     </form>
   );
 }
@@ -460,7 +463,9 @@ function GroupCard({ challenge: c, data, today, phase }: { challenge: JoinedChal
             ? `${group.completed} de ${group.members} ${group.members === 1 ? "pessoa completou" : "pessoas completaram"} o dia de hoje.`
             : `${group.members} ${group.members === 1 ? "pessoa participa" : "pessoas participam"} deste desafio.`}
       </p>
-      <p className="mt-1 text-[12px] text-faint">Sem nomes e sem ranking: cada um no seu ritmo.</p>
+      <p className="mt-1 text-[12px] leading-relaxed text-faint">
+        Sem ranking: cada um no seu ritmo. Os outros participantes não veem seu nome; só quem organiza o desafio vê quem participa.
+      </p>
       <div className="mt-4 flex items-center justify-between gap-3 rounded-md bg-bg/50 px-3 py-2.5">
         <span className="text-[13px] text-muted">
           Código <span className="ml-1 font-medium tracking-wider text-ink">{c.code}</span>

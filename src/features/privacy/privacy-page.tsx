@@ -58,7 +58,8 @@ export function PrivacyPage() {
               marcar a opção de resposta.
             </Item>
             <Item title="Desafios">
-              Em quais desafios você entrou e, para o progresso do grupo, só quantas tarefas fez em cada dia. As fotos do
+              Em quais desafios você entrou e, para o progresso do grupo, só quantas tarefas fez em cada dia. Quem organiza
+              o desafio vê a lista de participantes com o nome do seu perfil; os outros participantes não. As fotos do
               check-in são opcionais e ficam numa área privada: no app, só você vê. Outros participantes nunca têm acesso,
               e quem mantém o FORGE não as consulta.
             </Item>

@@ -306,3 +306,29 @@ create policy "fotos do desafio: trocar as próprias" on storage.objects for upd
 drop policy if exists "fotos do desafio: apagar as próprias" on storage.objects;
 create policy "fotos do desafio: apagar as próprias" on storage.objects for delete to authenticated
   using (bucket_id = 'challenge-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+-- ── Lista de participantes para o dono do app (só o nome do perfil, sem e-mail) ─
+
+create or replace function public.forge_admin_challenge_members(p_id uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+begin
+  if not public.forge_is_admin() then raise exception 'forbidden'; end if;
+  return coalesce((
+    select jsonb_agg(jsonb_build_object(
+      'name', coalesce(nullif(trim(d.data -> 'profile' ->> 'name'), ''), 'Sem nome no perfil'),
+      'joinedAt', m.joined_at
+    ) order by m.joined_at)
+    from public.forge_challenge_members m
+    left join public.forge_documents d on d.user_id = m.user_id
+    where m.challenge_id = p_id
+  ), '[]'::jsonb);
+end;
+$$;
+
+revoke all on function public.forge_admin_challenge_members(uuid) from public, anon;
+grant execute on function public.forge_admin_challenge_members(uuid) to authenticated;

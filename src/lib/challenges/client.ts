@@ -88,6 +88,12 @@ export async function adminChallenges(day: DateKey): Promise<AdminChallenge[]> {
   }));
 }
 
+export async function adminMembers(id: string): Promise<{ name: string; joinedAt: string }[]> {
+  const { data, error } = await getSupabase().rpc("forge_admin_challenge_members", { p_id: id });
+  if (error) fail(error);
+  return (data as { name: string; joinedAt: string }[]) ?? [];
+}
+
 export interface ChallengeDraft {
   id?: string;
   code: string;
