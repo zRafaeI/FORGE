@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { AuthError } from "@supabase/supabase-js";
 import { getSupabase, supabaseConfigured } from "@/lib/data/supabase-client";
 import { disablePush } from "@/lib/push/client";
+import { STORAGE_KEY } from "@/lib/data/local-repository";
 
 export interface AuthUser {
   id: string;
@@ -22,6 +23,8 @@ interface AuthContextValue {
   sendReset: (email: string) => Promise<void>;
   setNewPassword: (password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  /** Exclui a conta e tudo ligado a ela. Não pode ser desfeito. */
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -99,6 +102,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    const supabase = getSupabase();
+    const { data } = await supabase.auth.getSession();
+    const id = data.session?.user.id;
+    await disablePush().catch(() => undefined);
+    const { error } = await supabase.rpc("forge_delete_account");
+    if (error) throw error;
+    // Encerra a sessão só neste aparelho (a conta já não existe) e limpa as cópias locais,
+    // inclusive os dados de antes do cadastro, para nada voltar numa conta nova.
+    await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
+    try {
+      if (id) localStorage.removeItem(`${STORAGE_KEY}:user:${id}`);
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem("forge:support:thanked");
+    } catch {
+      /* sem armazenamento */
+    }
+    setUser(null);
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       mode: supabaseConfigured ? "cloud" : "local",
@@ -110,8 +133,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sendReset,
       setNewPassword,
       signOut,
+      deleteAccount,
     }),
-    [ready, user, recovering, signIn, signUp, sendReset, setNewPassword, signOut],
+    [ready, user, recovering, signIn, signUp, sendReset, setNewPassword, signOut, deleteAccount],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

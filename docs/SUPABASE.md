@@ -29,6 +29,12 @@ rodado de novo sem problema.
 3. Quem recebe o aviso por notificação é a conta com o e-mail em `forge_private.config` (`admin_email`),
    desde que tenha ativado as notificações em algum aparelho (Alimentação → Água hoje).
 
+## 1d. Excluir conta (uma vez)
+
+No **SQL Editor**, rode [`supabase/account.sql`](../supabase/account.sql). Ele cria a função usada pelo botão
+**Excluir minha conta** (Configurações): apaga o login e, em cascata, os registros, os aparelhos de notificação
+e o estado dos lembretes. Sugestões enviadas ficam, mas sem ligação com a pessoa.
+
 ## 2. Endereços de retorno (links de e-mail)
 
 Em **Authentication → URL Configuration**:

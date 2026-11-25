@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, Cloud, Download, HardDrive, Heart, LogOut, MessageSquarePlus, Upload } from "lucide-react";
+import { ChevronRight, Cloud, Download, HardDrive, Heart, LogOut, MessageSquarePlus, ShieldCheck, Upload } from "lucide-react";
+import { DeleteAccount } from "./delete-account";
 import { feedbackAvailable, openFeedback } from "@/features/feedback/feedback-dialog";
 import { CATEGORIES } from "@/lib/domain/categories";
 import { CATEGORY_IDS, type CategoryId } from "@/lib/domain/types";
@@ -182,6 +183,14 @@ export function SettingsPage() {
               <ChevronRight size={17} className="shrink-0 text-faint transition-colors group-hover:text-ink" aria-hidden />
             </button>
           )}
+          <Link href="/privacidade" className="surface group flex items-center gap-4 rounded-lg p-5 transition-colors hover:border-[#3b443b]">
+            <ShieldCheck size={20} className="shrink-0 text-accent" aria-hidden />
+            <div className="min-w-0 flex-1 text-sm leading-relaxed">
+              <p>Privacidade</p>
+              <p className="mt-1 text-muted">O que o FORGE guarda, quem vê e como apagar tudo.</p>
+            </div>
+            <ChevronRight size={17} className="shrink-0 text-faint transition-colors group-hover:text-ink" aria-hidden />
+          </Link>
           <Link href="/apoiar" className="surface group flex items-center gap-4 rounded-lg p-5 transition-colors hover:border-[#3b443b]">
             <Heart size={20} className="shrink-0 text-accent" aria-hidden />
             <div className="min-w-0 flex-1 text-sm leading-relaxed">
@@ -207,13 +216,14 @@ export function SettingsPage() {
             <p className="text-sm">Apagar todos os dados</p>
             <p className="mt-1 text-xs leading-relaxed text-faint">
               {cloud
-                ? "Remove perfil, rotina, hábitos e todo o histórico da sua conta e deste navegador, e reinicia a configuração inicial."
+                ? "Remove perfil, rotina, hábitos e todo o histórico da sua conta e deste navegador, e reinicia a configuração inicial. A conta continua existindo."
                 : "Remove perfil, rotina, hábitos e histórico deste navegador e reinicia a configuração inicial."}
             </p>
             <Button variant="danger" size="sm" className="mt-4" onClick={() => setConfirmReset(true)}>
               Apagar dados
             </Button>
           </div>
+          {cloud && <DeleteAccount />}
         </section>
       </div>
 

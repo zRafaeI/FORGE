@@ -87,6 +87,8 @@ Outros comandos:
   sair. Dados salvos no navegador e sincronizados com o Supabase, funcionando
   offline, com controle de conflito entre dispositivos. Dados que já existiam no
   navegador vão para a conta no primeiro acesso.
+- **Privacidade e excluir conta** *(novo na v0.9)*: página `/privacidade` em linguagem simples (aberta sem login)
+  e exclusão da conta com tudo ligado a ela, em Configurações (`supabase/account.sql`).
 - **Enviar sugestão** *(novo na v0.9)*: sugestões, problemas e elogios direto pelo app, com limite diário e
   aviso por notificação para o dono do app. Mensagens em `forge_feedback` (ver [docs/SUPABASE.md](docs/SUPABASE.md)).
 - **Apoiar o FORGE** *(novo na v0.9)*: página discreta com Pix (QR Code e copia e cola gerados no próprio app,

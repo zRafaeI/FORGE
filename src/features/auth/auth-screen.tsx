@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { MailCheck } from "lucide-react";
 import { z } from "zod";
@@ -168,6 +169,13 @@ export function AuthScreen() {
           </button>
         )}
       </div>
+
+      <p className="mt-8 text-[13px] leading-relaxed text-faint">
+        {mode === "criar" ? "Ao criar a conta, você concorda com a forma como o FORGE cuida dos seus dados. " : "Sem anúncios e sem venda de dados. "}
+        <Link href="/privacidade" className="text-muted underline underline-offset-4 hover:text-ink">
+          Ver privacidade
+        </Link>
+      </p>
     </Shell>
   );
 }

@@ -143,6 +143,9 @@ src/
 31. **Sugestões** (`forge_feedback`): envio só pela função `forge_send_feedback` (5 por pessoa a cada 24 h; e-mail
     só com consentimento). A tabela não tem políticas de RLS: ninguém lê pelo app. O aviso ao dono sai na mesma
     rodada do agendador dos lembretes (`/api/push/water`), para os aparelhos da conta em `admin_email`.
+32. **Privacidade e exclusão**: `/privacidade` é a única rota pública (ver `PUBLIC_PATHS` em `providers.tsx`).
+    `forge_delete_account` apaga o usuário em `auth.users` (cascata para documento, aparelhos e estado); o app
+    desativa as notificações do aparelho antes e limpa as cópias locais depois, inclusive os dados de antes do cadastro.
 
 ## Versões dos dados
 
