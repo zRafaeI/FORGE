@@ -211,3 +211,6 @@ exclusão com desfazer, desktop e celular).
     - Fotos: bucket privado, caminho `<usuário>/<desafio>/<dia>.jpg`, reduzidas para 1280 px. Sair do desafio e
       excluir a conta apagam as fotos (pela API de armazenamento, antes de apagar a conta).
     - Lembrete: entre 19h e 22h no fuso da pessoa, uma vez por dia, só com o dia incompleto (`challengePushFor`).
+35. **Painel do FORGE** (`/admin`): só para a conta em `admin_email` (checado no banco por `forge_is_admin`); para os
+    demais, a página aparece como "não encontrada" e nenhum atalho é mostrado. "Uso" = a pessoa registrou algo (gatilho
+    em `forge_documents` grava o dia em `forge_private.daily_active`). Mostra nome do perfil, data da conta e último uso.

@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/layout/page-header";
 
 /** Página de privacidade em linguagem simples. Pode ser lida com ou sem login. */
 
-export const PRIVACY_UPDATED = "25 de novembro de 2026";
+export const PRIVACY_UPDATED = "26 de novembro de 2026";
 export const PRIVACY_CONTACT = "eurafaelguerra@gmail.com";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -81,7 +81,8 @@ export function PrivacyPage() {
           </p>
           <p>
             Quem mantém o FORGE tem acesso técnico ao banco para que o app funcione e para corrigir problemas, e não consulta
-            registros pessoais. Seus dados não são compartilhados com ninguém.
+            registros pessoais. Para acompanhar o uso do app, vê só o nome do seu perfil, quando você criou a conta e o dia do
+            último uso, nunca o que você registrou. Seus dados não são compartilhados com ninguém.
           </p>
         </Section>
 

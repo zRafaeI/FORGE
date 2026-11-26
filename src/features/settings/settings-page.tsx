@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Cloud, Download, HardDrive, Heart, LogOut, MessageSquarePlus, ShieldCheck, Upload } from "lucide-react";
 import { DeleteAccount } from "./delete-account";
+import { AdminLink } from "@/features/admin/admin-link";
 import { feedbackAvailable, openFeedback } from "@/features/feedback/feedback-dialog";
 import { CATEGORIES } from "@/lib/domain/categories";
 import { CATEGORY_IDS, type CategoryId } from "@/lib/domain/types";
@@ -169,6 +170,7 @@ export function SettingsPage() {
             </div>
           )}
           <InstallSection />
+          <AdminLink />
           {feedbackAvailable && (
             <button
               type="button"

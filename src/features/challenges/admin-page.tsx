@@ -68,9 +68,14 @@ export function AdminChallengesPage() {
         title="Painel de desafios"
         description="Crie desafios, compartilhe o código e acompanhe quantas pessoas estão em dia. Sem nomes: só números."
         actions={
-          <Button variant="primary" icon={<Plus size={16} />} onClick={() => setEditing(blankDraft(today))}>
-            Novo desafio
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/admin" className="inline-flex h-10 items-center rounded-md border border-line px-3 text-sm text-muted hover:text-ink">
+              Painel do FORGE
+            </Link>
+            <Button variant="primary" icon={<Plus size={16} />} onClick={() => setEditing(blankDraft(today))}>
+              Novo desafio
+            </Button>
+          </div>
         }
       />
       {error && (

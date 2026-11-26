@@ -111,12 +111,25 @@ export function BarChart({
         </div>
       </div>
       {/* Rótulos X */}
-      <div className="mt-2 flex pl-[52px]" aria-hidden>
-        {data.map((d) => (
-          <span key={d.key} className={cn("num flex-1 text-center text-[11px]", d.highlight ? "text-ink" : "text-faint")}>
-            {d.label}
-          </span>
-        ))}
+      <div className="mt-2 flex [overflow-x:clip] pl-[52px]" aria-hidden>
+        {data.map((d, i) => {
+          // Com muitas barras, no celular só cabe um rótulo a cada dois (o último sempre aparece).
+          const thin = data.length > 8 && i % 2 !== (data.length - 1) % 2;
+          return (
+            <span
+              key={d.key}
+              className={cn(
+                "num flex min-w-0 flex-1 justify-center text-[11px] whitespace-nowrap",
+                d.highlight ? "text-ink" : "text-faint",
+                thin && "invisible sm:visible",
+                // o último rótulo encosta na direita para não sair do gráfico
+                data.length > 8 && i === data.length - 1 && "justify-end",
+              )}
+            >
+              {d.label}
+            </span>
+          );
+        })}
       </div>
       <div className="sr-only">
       <table>

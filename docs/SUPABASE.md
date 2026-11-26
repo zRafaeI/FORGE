@@ -43,6 +43,12 @@ No **SQL Editor**, rode [`supabase/challenges.sql`](../supabase/challenges.sql) 
 - o lembrete à noite, na mesma rodada do agendador;
 - o bucket privado `challenge-photos`, em que cada pessoa só lê e grava na própria pasta.
 
+## 1f. Painel do FORGE (uma vez)
+
+No **SQL Editor**, rode [`supabase/admin.sql`](../supabase/admin.sql) (depois do `challenges.sql`). Ele passa a registrar
+os dias em que cada pessoa usa o app e cria a função do painel `/admin`, que só a conta em `admin_email` consegue abrir
+(nome do perfil, data da conta e último uso; nunca o e-mail nem o conteúdo dos registros).
+
 ## 2. Endereços de retorno (links de e-mail)
 
 Em **Authentication → URL Configuration**:
