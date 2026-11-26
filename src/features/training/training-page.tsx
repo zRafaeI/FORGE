@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Dumbbell, Footprints, Moon, Pencil, Plus, Trash2, TrendingUp } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Copy, Dumbbell, Footprints, Moon, Pencil, Plus, Trash2, TrendingUp } from "lucide-react";
 import type { TrainingData } from "@/lib/domain/types";
 import { deleteTrainingEntry, restoreTrainingEntry } from "@/lib/store/actions";
 import { useForge } from "@/lib/store/forge-store";
@@ -15,7 +15,9 @@ import {
   formatPace,
   paceOf,
   runRecords,
+  summarizeSets,
   timeline,
+  topLoad,
   trainingWeeks,
   workoutSets,
   workoutVolume,
@@ -34,7 +36,7 @@ import { RunFormDialog } from "./run-form";
 import { RestFormDialog } from "./rest-form";
 import { WorkoutFormDialog } from "./workout-form";
 
-type Tab = "historico" | "corridas" | "forca";
+type Tab = "historico" | "corridas" | "musculacao" | "forca";
 type Metric = "km" | "sessoes";
 type Collection = keyof TrainingData;
 
@@ -55,6 +57,7 @@ function TrainingContent({ today }: { today: string }) {
   const [metric, setMetric] = useState<Metric>("km");
   const [editingRun, setEditingRun] = useState<TrainingData["runs"][number] | "new" | null>(null);
   const [editingWorkout, setEditingWorkout] = useState<TrainingData["workouts"][number] | "new" | null>(null);
+  const [repeating, setRepeating] = useState<TrainingData["workouts"][number] | null>(null);
   const [restOpen, setRestOpen] = useState(false);
   const [deleting, setDeleting] = useState<TrainingEntry | null>(null);
 
@@ -62,6 +65,12 @@ function TrainingContent({ today }: { today: string }) {
   const thisWeek = weeks[weeks.length - 1];
   const entries = useMemo(() => timeline(t), [t]);
   const isEmpty = entries.length === 0;
+
+  const tabsRef = useRef<HTMLDivElement>(null);
+  function openTab(next: Tab) {
+    setTab(next);
+    requestAnimationFrame(() => tabsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
 
   function edit(e: TrainingEntry) {
     if (e.kind === "run") setEditingRun(e.item);
@@ -87,11 +96,11 @@ function TrainingContent({ today }: { today: string }) {
         description="Corridas, musculação e descanso — o que você fez de verdade, semana após semana."
         actions={
           <>
-            <Button variant="primary" icon={<Footprints size={16} />} onClick={() => setEditingRun("new")}>
-              Corrida
+            <Button variant="primary" icon={<Plus size={16} />} onClick={() => setEditingRun("new")}>
+              Nova corrida
             </Button>
-            <Button icon={<Dumbbell size={16} />} onClick={() => setEditingWorkout("new")}>
-              Musculação
+            <Button icon={<Plus size={16} />} onClick={() => setEditingWorkout("new")}>
+              Novo treino
             </Button>
             <Button variant="ghost" icon={<Moon size={16} />} onClick={() => setRestOpen(true)}>
               Descanso
@@ -124,8 +133,14 @@ function TrainingContent({ today }: { today: string }) {
               <span id="week-title">Esta semana</span>
             </SectionTitle>
             <dl className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line-soft bg-line-soft sm:grid-cols-4">
-              <WeekStat label="Corrida" value={formatKm(thisWeek.runKm)} sub={`${thisWeek.runCount} ${thisWeek.runCount === 1 ? "saída" : "saídas"}`} />
               <WeekStat
+                label="Corrida"
+                value={formatKm(thisWeek.runKm)}
+                sub={`${thisWeek.runCount} ${thisWeek.runCount === 1 ? "saída" : "saídas"}`}
+                onOpen={() => openTab("corridas")}
+              />
+              <WeekStat
+                onOpen={() => openTab("musculacao")}
                 label="Musculação"
                 value={`${thisWeek.strengthCount} ${thisWeek.strengthCount === 1 ? "sessão" : "sessões"}`}
                 sub={thisWeek.strengthVolume ? `${formatKg(thisWeek.strengthVolume)} de volume` : "Sem carga registrada"}
@@ -174,20 +189,30 @@ function TrainingContent({ today }: { today: string }) {
             </p>
           </section>
 
-          <div>
+          <div ref={tabsRef} className="scroll-mt-20">
             <Segmented
               label="Seção"
               value={tab}
               onChange={setTab}
-              className="mb-6 max-w-md"
+              className="mb-6 max-w-xl"
               options={[
                 { value: "historico", label: "Histórico" },
-                { value: "corridas", label: `Corridas (${t.runs.length})` },
+                { value: "corridas", label: <>Corridas<span className="hidden sm:inline"> ({t.runs.length})</span></> },
+                { value: "musculacao", label: <>Musculação<span className="hidden sm:inline"> ({t.workouts.length})</span></> },
                 { value: "forca", label: "Progressão" },
               ]}
             />
             {tab === "historico" && <History entries={entries} onEdit={edit} onDelete={setDeleting} />}
             {tab === "corridas" && <Runs runs={t.runs} onNew={() => setEditingRun("new")} onEdit={(r) => setEditingRun(r)} />}
+            {tab === "musculacao" && (
+              <Strength
+                workouts={t.workouts}
+                onNew={() => setEditingWorkout("new")}
+                onEdit={(w) => setEditingWorkout(w)}
+                onRepeat={(w) => setRepeating(w)}
+                onDelete={(w) => setDeleting({ kind: "workout", date: w.date, item: w } as TrainingEntry)}
+              />
+            )}
             {tab === "forca" && <Progression workouts={t.workouts} onNew={() => setEditingWorkout("new")} />}
           </div>
         </div>
@@ -200,9 +225,13 @@ function TrainingContent({ today }: { today: string }) {
         today={today}
       />
       <WorkoutFormDialog
-        open={editingWorkout !== null}
-        onClose={() => setEditingWorkout(null)}
+        open={editingWorkout !== null || repeating !== null}
+        onClose={() => {
+          setEditingWorkout(null);
+          setRepeating(null);
+        }}
         workout={editingWorkout && editingWorkout !== "new" ? editingWorkout : undefined}
+        template={repeating ?? undefined}
         today={today}
       />
       <RestFormDialog open={restOpen} onClose={() => setRestOpen(false)} today={today} />
@@ -218,12 +247,31 @@ function TrainingContent({ today }: { today: string }) {
   );
 }
 
-function WeekStat({ label, value, sub }: { label: string; value: string; sub: string }) {
-  return (
-    <div className="bg-surface px-5 py-4">
+function WeekStat({ label, value, sub, onOpen }: { label: string; value: string; sub: string; onOpen?: () => void }) {
+  const body = (
+    <>
       <dt className="text-xs text-muted">{label}</dt>
       <dd className="type-title num mt-2 text-xl">{value}</dd>
       <dd className="mt-1 text-xs text-faint">{sub}</dd>
+    </>
+  );
+  if (!onOpen) return <div className="bg-surface px-5 py-4">{body}</div>;
+  return (
+    <div className="bg-surface">
+      <dt className="sr-only">{label}</dt>
+      <dd className="h-full">
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-label={`${label}: ${value}, ${sub}. Ver ${label.toLowerCase()}`}
+          className="group block h-full w-full px-5 py-4 text-left transition-colors hover:bg-surface-2"
+        >
+          <span className="block text-xs text-muted">{label}</span>
+          <span className="type-title num mt-2 block text-xl">{value}</span>
+          <span className="mt-1 block text-xs text-faint">{sub}</span>
+          <span className="mt-2 block text-[11px] text-accent opacity-80 group-hover:opacity-100">Ver {label.toLowerCase()}</span>
+        </button>
+      </dd>
     </div>
   );
 }
@@ -401,6 +449,117 @@ function Runs({
           </tbody>
         </table>
       </div>
+    </section>
+  );
+}
+
+/* ---------- Musculação ---------- */
+
+function Strength({
+  workouts,
+  onNew,
+  onEdit,
+  onRepeat,
+  onDelete,
+}: {
+  workouts: TrainingData["workouts"];
+  onNew: () => void;
+  onEdit: (w: TrainingData["workouts"][number]) => void;
+  onRepeat: (w: TrainingData["workouts"][number]) => void;
+  onDelete: (w: TrainingData["workouts"][number]) => void;
+}) {
+  const [limit, setLimit] = useState(10);
+  if (!workouts.length)
+    return (
+      <EmptyState
+        icon={<Dumbbell size={18} />}
+        title="Nenhum treino de musculação ainda"
+        description="Registre exercícios, séries, repetições e cargas. Aqui aparecem todas as suas sessões, e em Progressão você acompanha a evolução das cargas."
+        action={
+          <Button size="sm" variant="primary" icon={<Plus size={15} />} onClick={onNew}>
+            Registrar treino
+          </Button>
+        }
+      />
+    );
+
+  const sorted = [...workouts].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+  const month = sorted[0].date.slice(0, 7);
+  const thisMonth = workouts.filter((w) => w.date.startsWith(month));
+  const exercisesCount = new Set(workouts.flatMap((w) => w.exercises.map((e) => e.name.trim().toLocaleLowerCase("pt-BR")))).size;
+
+  return (
+    <section aria-label="Musculação" className="flex max-w-3xl flex-col gap-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <dl className="grid min-w-0 flex-1 basis-[420px] grid-cols-3 gap-px overflow-hidden rounded-lg border border-line-soft bg-line-soft">
+          <WeekStat label="Sessões" value={String(workouts.length)} sub="no total" />
+          <WeekStat label="No mês" value={String(thisMonth.length)} sub={`${formatKg(thisMonth.reduce((t, w) => t + workoutVolume(w), 0))} de volume`} />
+          <WeekStat label="Exercícios" value={String(exercisesCount)} sub="diferentes" />
+        </dl>
+        <Button variant="primary" icon={<Plus size={16} />} onClick={onNew}>
+          Registrar treino
+        </Button>
+      </div>
+
+      <ol className="flex flex-col gap-4">
+        {sorted.slice(0, limit).map((w) => {
+          const vol = workoutVolume(w);
+          return (
+            <li key={w.id} className="surface rounded-lg p-5">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-md border border-line bg-surface-2 text-accent">
+                  <Dumbbell size={16} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h3 className="type-title truncate text-[16px]">{w.title}</h3>
+                  <p className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-faint">
+                    <span>{formatLongDate(w.date)}</span>
+                    <span>
+                      {w.exercises.length} exercício{w.exercises.length > 1 ? "s" : ""}, {workoutSets(w)} séries
+                    </span>
+                    {vol > 0 && <span className="num">{formatKg(vol)} de volume</span>}
+                    {w.durationMin && <span>{formatDuration(w.durationMin)}</span>}
+                  </p>
+                </div>
+                <Menu
+                  label={`Ações do treino ${w.title}`}
+                  items={[
+                    { label: "Repetir treino", icon: <Copy size={14} />, onSelect: () => onRepeat(w) },
+                    { label: "Editar", icon: <Pencil size={14} />, onSelect: () => onEdit(w) },
+                    { label: "Excluir", icon: <Trash2 size={14} />, onSelect: () => onDelete(w), danger: true },
+                  ]}
+                />
+              </div>
+
+              <ul className="mt-4 flex flex-col divide-y divide-line-soft border-t border-line-soft">
+                {w.exercises.map((e, i) => {
+                  const top = topLoad(e.sets);
+                  return (
+                    <li key={`${e.name}-${i}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-1 py-3">
+                      <p className="min-w-0 text-[15px]">{e.name}</p>
+                      <p className="num text-xs text-faint">{top ? `até ${formatKg(top)}` : "peso corporal"}</p>
+                      <p className="num col-span-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[13px] text-muted">
+                        {summarizeSets(e.sets).map((line, k) => (
+                          <span key={k}>{line}</span>
+                        ))}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+              {w.notes && <p className="mt-3 text-sm text-muted">{w.notes}</p>}
+              <Button size="sm" variant="ghost" icon={<Copy size={14} />} className="mt-3 -ml-2" onClick={() => onRepeat(w)}>
+                Repetir treino
+              </Button>
+            </li>
+          );
+        })}
+      </ol>
+      {sorted.length > limit && (
+        <Button variant="ghost" size="sm" className="self-start" onClick={() => setLimit((l) => l + 10)}>
+          Mostrar mais treinos
+        </Button>
+      )}
     </section>
   );
 }

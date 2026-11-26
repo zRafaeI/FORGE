@@ -105,3 +105,17 @@ describe("migração", () => {
     expect(r.success && r.data.training.runs).toHaveLength(1);
   });
 });
+
+describe("resumo das séries", () => {
+  it("junta séries iguais em sequência e mostra peso corporal", async () => {
+    const { summarizeSets, topLoad } = await import("./training");
+    expect(summarizeSets([{ reps: 10, loadKg: 40 }, { reps: 10, loadKg: 40 }, { reps: 10, loadKg: 40 }, { reps: 8, loadKg: 45 }])).toEqual([
+      "3 × 10 · 40 kg",
+      "8 · 45 kg",
+    ]);
+    expect(summarizeSets([{ reps: 12 }, { reps: 12 }])).toEqual(["2 × 12 · peso corporal"]);
+    expect(summarizeSets([{ reps: 10, loadKg: 22.5 }])).toEqual(["10 · 22,5 kg"]);
+    expect(summarizeSets([{ reps: 10, loadKg: 40 }, { reps: 8, loadKg: 45 }, { reps: 10, loadKg: 40 }])).toEqual(["10 · 40 kg", "8 · 45 kg", "10 · 40 kg"]);
+    expect(topLoad([{ reps: 10, loadKg: 40 }, { reps: 8, loadKg: 45 }, { reps: 12 }])).toBe(45);
+  });
+});

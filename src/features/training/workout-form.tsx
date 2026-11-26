@@ -39,11 +39,14 @@ export function WorkoutFormDialog({
   open,
   onClose,
   workout,
+  template,
   today,
 }: {
   open: boolean;
   onClose: () => void;
   workout?: StrengthWorkout;
+  /** Repetir treino: cria um novo, hoje, já com o nome e os exercícios deste. */
+  template?: StrengthWorkout;
   today: string;
 }) {
   const { data, update } = useForge();
@@ -59,14 +62,15 @@ export function WorkoutFormDialog({
 
   useEffect(() => {
     if (!open) return;
+    const base = workout ?? template;
     setDate(workout?.date ?? today);
-    setTitle(workout?.title ?? "");
-    setDuration(workout?.durationMin ? String(workout.durationMin) : "");
+    setTitle(base?.title ?? "");
+    setDuration(base?.durationMin ? String(base.durationMin) : "");
     setNotes(workout?.notes ?? "");
-    setExercises(workout ? toDraft(workout) : [blankExercise()]);
+    setExercises(base ? toDraft(base) : [blankExercise()]);
     setErrors({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, workout?.id]);
+  }, [open, workout?.id, template?.id]);
 
   const knownExercises = useMemo(() => exerciseProgress(data.training.workouts).map((e) => e.name), [data.training.workouts]);
   const knownTitles = useMemo(

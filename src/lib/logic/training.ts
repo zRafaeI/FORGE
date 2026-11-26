@@ -1,4 +1,4 @@
-import type { DateKey, Run, StrengthWorkout, TrainingData } from "@/lib/domain/types";
+import type { StrengthSet, DateKey, Run, StrengthWorkout, TrainingData } from "@/lib/domain/types";
 import { addDays, weekday } from "./dates";
 
 /* ---------- Duração e ritmo ---------- */
@@ -173,3 +173,20 @@ export function timeline(t: TrainingData): TrainingEntry[] {
   ];
   return entries.sort((a, b) => b.date.localeCompare(a.date) || b.item.createdAt.localeCompare(a.item.createdAt));
 }
+
+/**
+ * Resume as séries de um exercício, juntando as iguais em sequência.
+ * Ex.: [10×40, 10×40, 10×40, 8×45] → ["3 × 10 · 40 kg", "8 · 45 kg"]; sem carga → "peso corporal".
+ */
+export function summarizeSets(sets: StrengthSet[]): string[] {
+  const out: { count: number; reps: number; loadKg?: number }[] = [];
+  for (const s of sets) {
+    const last = out[out.length - 1];
+    if (last && last.reps === s.reps && last.loadKg === s.loadKg) last.count++;
+    else out.push({ count: 1, reps: s.reps, loadKg: s.loadKg });
+  }
+  return out.map((g) => `${g.count > 1 ? `${g.count} × ` : ""}${g.reps} · ${g.loadKg ? formatKg(g.loadKg) : "peso corporal"}`);
+}
+
+/** Melhor carga usada num exercício da sessão (para destacar). */
+export const topLoad = (sets: StrengthSet[]) => sets.reduce((m, s) => Math.max(m, s.loadKg ?? 0), 0);

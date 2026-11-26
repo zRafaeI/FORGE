@@ -69,7 +69,7 @@ export function Segmented<T extends string>({
 }: {
   value: T;
   onChange: (v: T) => void;
-  options: { value: T; label: string }[];
+  options: { value: T; label: ReactNode }[];
   label: string;
   className?: string;
 }) {
@@ -85,7 +85,7 @@ export function Segmented<T extends string>({
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={cn(
-              "h-8 flex-1 whitespace-nowrap rounded-[7px] px-2.5 text-[13px] transition-colors",
+              "h-8 flex-1 whitespace-nowrap rounded-[7px] px-1.5 text-[13px] transition-colors sm:px-2.5",
               active ? "bg-surface-3 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.05)]" : "text-muted hover:text-ink",
             )}
           >
