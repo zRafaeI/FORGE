@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Segmented } from "@/components/ui/form";
 import { PasswordInput } from "@/components/ui/password-input";
 import { LogoMark } from "@/components/layout/logo";
+import { InAppNotice } from "@/components/layout/in-app-notice";
 
 type Mode = "entrar" | "criar" | "esqueci";
 
@@ -29,7 +30,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 /** Entrar, criar conta ou recuperar a senha. */
 export function AuthScreen() {
-  const { signIn, signUp, sendReset } = useAuth();
+  const { signIn, signUp, sendReset, verifyResetCode, linkProblem } = useAuth();
   const [mode, setMode] = useState<Mode>("entrar");
   const pathname = usePathname();
   // Vindo da apresentação com "Começar grátis" (?modo=criar), abre direto em Criar conta.
@@ -43,6 +44,23 @@ export function AuthScreen() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<null | "confirmar" | "redefinir">(null);
+  const [code, setCode] = useState("");
+  const [codeError, setCodeError] = useState("");
+
+  async function submitCode(e: React.FormEvent) {
+    e.preventDefault();
+    const digits = code.replace(/\D/g, "");
+    if (digits.length < 6) return setCodeError("Digite os números do código que chegou no e-mail.");
+    setBusy(true);
+    setCodeError("");
+    try {
+      await verifyResetCode(email.trim(), digits);
+    } catch (err) {
+      setCodeError(authMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
@@ -89,13 +107,36 @@ export function AuthScreen() {
         <p className="mt-4 text-[15px] leading-relaxed text-muted">
           {sent === "confirmar"
             ? `Enviamos um link de confirmação para ${email.trim()}. Abra o link neste dispositivo e depois entre com sua senha.`
-            : `Se existir uma conta com ${email.trim()}, você vai receber um link para criar uma nova senha.`}
+            : `Se existir uma conta com ${email.trim()}, você vai receber um e-mail com um código e um link para criar uma nova senha.`}
         </p>
-        <p className="mt-3 text-sm text-faint">Não chegou? Veja a caixa de spam ou tente de novo em alguns minutos.</p>
+        {sent === "redefinir" && (
+          <form onSubmit={submitCode} className="mt-6 flex flex-col gap-3" noValidate>
+            <Field label="Código do e-mail" hint={codeError ? undefined : "Funciona em qualquer aparelho. O link também serve, se abrir neste navegador."} error={codeError}>
+              {(p) => (
+                <Input
+                  {...p}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={12}
+                  className="num text-lg tracking-[0.3em]"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                />
+              )}
+            </Field>
+            <Button type="submit" variant="primary" disabled={busy}>
+              {busy ? "Aguarde…" : "Continuar"}
+            </Button>
+          </form>
+        )}
+        <p className="mt-4 text-sm text-faint">Não chegou? Veja a caixa de spam ou tente de novo em alguns minutos.</p>
         <Button
           className="mt-8"
+          variant={sent === "redefinir" ? "ghost" : undefined}
           onClick={() => {
             setSent(null);
+            setCode("");
+            setCodeError("");
             setMode("entrar");
             setPassword("");
             setConfirm("");
@@ -113,9 +154,17 @@ export function AuthScreen() {
       </h1>
       <p className="mt-4 text-[15px] leading-relaxed text-muted">
         {mode === "esqueci"
-          ? "Informe seu e-mail e enviaremos um link para criar uma nova senha."
+          ? "Informe seu e-mail e enviaremos um código e um link para criar uma nova senha."
           : "Sua conta guarda sua rotina, hábitos e histórico e mantém tudo igual no computador e no celular."}
       </p>
+      {linkProblem && (
+        <p role="alert" className="mt-6 rounded-lg border border-line bg-surface-2 p-4 text-sm leading-relaxed text-muted">
+          <span className="text-ink">Esse link não funcionou aqui.</span> Ele precisa ser aberto no mesmo navegador em que você pediu, e
+          vale por pouco tempo. Peça de novo em <strong className="font-medium text-ink">Esqueci minha senha</strong> e use o código do
+          e-mail, que funciona em qualquer aparelho.
+        </p>
+      )}
+      <InAppNotice className="mt-6" />
 
       {mode !== "esqueci" && (
         <Segmented
@@ -160,7 +209,7 @@ export function AuthScreen() {
           </p>
         )}
         <Button type="submit" variant="primary" disabled={busy} className="mt-2">
-          {busy ? "Aguarde…" : mode === "entrar" ? "Entrar" : mode === "criar" ? "Criar conta" : "Enviar link"}
+          {busy ? "Aguarde…" : mode === "entrar" ? "Entrar" : mode === "criar" ? "Criar conta" : "Enviar e-mail"}
         </Button>
       </form>
 

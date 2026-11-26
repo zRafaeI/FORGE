@@ -34,6 +34,13 @@ export function IOSInstallSteps() {
           Toque em <strong className="font-medium">Adicionar</strong>. O FORGE aparece com ícone próprio e abre em tela cheia.
         </span>
       </li>
+      <li className="flex items-start gap-3">
+        <span className="num flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-3 text-xs">4</span>
+        <span>
+          Abra pelo ícone e entre com seu e-mail e senha uma vez. O app da tela de início guarda o login separado do Safari, e depois
+          disso você continua conectado.
+        </span>
+      </li>
     </ol>
   );
 }

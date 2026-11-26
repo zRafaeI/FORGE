@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { InAppNotice } from "@/components/layout/in-app-notice";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { track } from "@vercel/analytics";
 import { Wordmark } from "@/components/layout/logo";
@@ -281,6 +282,7 @@ export function Landing() {
               </Link>
             </div>
             <p className="mt-5 text-[13px] text-faint">Grátis. Abre no navegador e instala no celular, sem loja.</p>
+            <InAppNotice className="mt-6 max-w-[46ch]" />
           </div>
           <PhoneVideo className="mx-auto w-full max-w-[300px] lg:max-w-none" />
         </section>

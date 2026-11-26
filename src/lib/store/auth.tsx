@@ -22,6 +22,10 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>;
   sendReset: (email: string) => Promise<void>;
+  /** Entra com o código do e-mail de recuperação e abre a tela de nova senha. */
+  verifyResetCode: (email: string, code: string) => Promise<void>;
+  /** Um link de e-mail não pôde ser usado aqui (aberto em outro navegador ou vencido). */
+  linkProblem: boolean;
   setNewPassword: (password: string) => Promise<void>;
   signOut: () => Promise<void>;
   /** Exclui a conta e tudo ligado a ela. Não pode ser desfeito. */
@@ -40,6 +44,11 @@ export function authMessage(e: unknown): string {
   if (code === "user_already_exists" || msg.includes("already registered")) return "Já existe uma conta com este e-mail. Entre com sua senha.";
   if (code === "weak_password" || msg.includes("password should")) return "Use uma senha mais forte, com pelo menos 8 caracteres.";
   if (code === "same_password") return "A nova senha precisa ser diferente da anterior.";
+  if (code === "email_address_not_authorized" || msg.includes("not authorized"))
+    return "O envio de e-mails está temporariamente indisponível. Tente de novo mais tarde ou fale com o suporte.";
+  if (code === "over_email_send_rate_limit" || msg.includes("email rate limit")) return "Muitos e-mails enviados agora. Aguarde alguns minutos e tente de novo.";
+  if (code === "otp_expired" || msg.includes("token has expired") || msg.includes("invalid otp"))
+    return "Código inválido ou vencido. Confira os números ou peça um novo e-mail.";
   if (code.startsWith("over_") || msg.includes("rate limit")) return "Muitas tentativas seguidas. Aguarde um minuto e tente de novo.";
   if (code === "validation_failed" || msg.includes("invalid email") || msg.includes("unable to validate email")) return "Confira o e-mail digitado.";
   const name = (err as { name?: string }).name ?? "";
@@ -71,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(!supabaseConfigured);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [recovering, setRecovering] = useState(false);
+  const [linkProblem, setLinkProblem] = useState(false);
 
   useEffect(() => {
     if (!supabaseConfigured) return;
@@ -92,7 +102,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Sem sessão por falha de rede (sinal fraco ao renovar o login) não é sair da conta:
     // o Supabase mantém a sessão salva e renova sozinho quando a internet voltar.
     // Só um "SIGNED_OUT" de verdade (ou a sessão sumir do aparelho) volta para a tela de entrar.
+    // Link do e-mail aberto num navegador diferente do que pediu (ex.: app da tela de início x Safari)
+    // ou já vencido: avisa na tela de entrar, que oferece o código de 6 dígitos como alternativa.
+    const params = new URLSearchParams(window.location.search + "&" + window.location.hash.slice(1));
+    if (params.get("error_code") || params.get("error_description")) setLinkProblem(true);
     sb.auth.getSession().then(({ data, error }) => {
+      if (error && (error.name === "AuthPKCECodeVerifierMissingError" || /code verifier|flow state|expired/i.test(error.message)))
+        setLinkProblem(true);
       if (!data.session && error && storedSessionUser()) return setReady(true);
       apply(data.session);
     });
@@ -121,6 +137,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const sendReset = useCallback(async (email: string) => {
     const { error } = await getSupabase().auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
     if (error) throw error;
+  }, []);
+
+  const verifyResetCode = useCallback(async (email: string, code: string) => {
+    const { error } = await getSupabase().auth.verifyOtp({ email, token: code, type: "recovery" });
+    if (error) throw error;
+    setRecovering(true);
+    setLinkProblem(false);
   }, []);
 
   const setNewPassword = useCallback(async (password: string) => {
@@ -170,8 +193,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setNewPassword,
       signOut,
       deleteAccount,
+      verifyResetCode,
+      linkProblem,
     }),
-    [ready, user, recovering, signIn, signUp, sendReset, setNewPassword, signOut, deleteAccount],
+    [ready, user, recovering, signIn, signUp, sendReset, setNewPassword, signOut, deleteAccount, verifyResetCode, linkProblem],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
