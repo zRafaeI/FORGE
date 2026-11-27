@@ -13,7 +13,7 @@ export function AdminLink() {
   }, []);
   if (!show) return null;
   return (
-    <Link href="/admin" className="surface group flex items-center gap-4 rounded-lg p-5 transition-colors hover:border-[#3b443b]">
+    <Link href="/admin" className="surface group flex items-center gap-4 rounded-lg p-5 transition-colors hover:border-[#1d5a45]">
       <BarChart3 size={20} className="shrink-0 text-accent" aria-hidden />
       <div className="min-w-0 flex-1 text-sm leading-relaxed">
         <p>Painel do FORGE</p>

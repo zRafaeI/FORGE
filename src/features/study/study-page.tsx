@@ -271,7 +271,7 @@ function TimerPanel({ onFinish, onDiscard }: { onFinish: () => void; onDiscard: 
       aria-label="Temporizador de estudo"
       className={cn(
         "surface relative overflow-hidden rounded-lg p-6 sm:p-8",
-        running && "border-accent-deep/60 shadow-[0_0_0_1px_rgb(89_108_84/0.25),0_20px_60px_-30px_rgb(165_184_155/0.35)]",
+        running && "border-accent-deep/60 shadow-[0_0_0_1px_rgb(10_143_79/0.25),0_20px_60px_-30px_rgb(12_213_111/0.35)]",
       )}
     >
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">

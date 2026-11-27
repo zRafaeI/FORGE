@@ -2,7 +2,7 @@ import { useId, type ComponentPropsWithRef, type ReactNode, type SelectHTMLAttri
 import { cn } from "./cn";
 
 const control =
-  "w-full rounded-md border border-line bg-bg/60 px-3 text-sm text-ink placeholder:text-faint transition-colors hover:border-[#3b443b] focus:border-accent-deep focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-accent/20 aria-invalid:border-warn/70";
+  "w-full rounded-md border border-line bg-bg/60 px-3 text-sm text-ink placeholder:text-faint transition-colors hover:border-[#1d5a45] focus:border-accent-deep focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-accent/20 aria-invalid:border-warn/70";
 
 export function Field({
   label,
@@ -118,7 +118,7 @@ export function Toggle({
         "inline-flex h-9 items-center justify-center gap-1.5 rounded-md border px-3 text-[13px] transition-colors",
         pressed
           ? "border-accent-deep bg-accent-deep/25 text-ink"
-          : "border-line bg-bg/40 text-muted hover:border-[#3b443b] hover:text-ink",
+          : "border-line bg-bg/40 text-muted hover:border-[#1d5a45] hover:text-ink",
         className,
       )}
     >

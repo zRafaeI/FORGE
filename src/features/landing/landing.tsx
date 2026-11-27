@@ -20,7 +20,7 @@ function Primary({ href, children, where, className }: { href: string; children:
       href={href}
       onClick={cta(where)}
       className={cn(
-        "inline-flex h-12 items-center justify-center rounded-md bg-accent px-6 text-[15px] font-semibold text-bg shadow-[inset_0_1px_0_rgb(255_255_255/0.25)] transition-colors hover:bg-[#b4c6aa] active:bg-[#98ab8e]",
+        "inline-flex h-12 items-center justify-center rounded-md bg-accent px-6 text-[15px] font-semibold text-bg shadow-[inset_0_1px_0_rgb(255_255_255/0.25)] transition-colors hover:bg-[#3ae38b] active:bg-[#0ab862]",
         className,
       )}
     >
@@ -219,7 +219,7 @@ function DayNow() {
             className="absolute top-0 transition-[left] duration-[1200ms] ease-out motion-reduce:transition-none"
             style={{ left: `${p * 100}%` }}
           >
-            <div className="h-6 w-[3px] -translate-x-1/2 rounded-full bg-accent shadow-[0_0_18px_rgb(165_184_155/0.7)]" />
+            <div className="h-6 w-[3px] -translate-x-1/2 rounded-full bg-accent shadow-[0_0_18px_rgb(12_213_111/0.7)]" />
           </div>
         )}
       </div>

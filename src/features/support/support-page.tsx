@@ -49,7 +49,7 @@ export function SupportPage() {
 
   useEffect(() => {
     let alive = true;
-    QRCode.toString(code, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#101210", light: "#00000000" } })
+    QRCode.toString(code, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#011D16", light: "#00000000" } })
       .then((svg) => alive && setQr(svg))
       .catch(() => alive && setQr(""));
     return () => {
@@ -146,7 +146,7 @@ export function SupportPage() {
                   onClick={() => setChoice(o.value)}
                   className={cn(
                     "h-9 rounded-md border px-3 text-[13px] whitespace-nowrap transition-colors",
-                    active ? "border-accent bg-accent-deep/45 text-ink" : "border-line text-muted hover:border-[#3b443b] hover:text-ink",
+                    active ? "border-accent bg-accent-deep/45 text-ink" : "border-line text-muted hover:border-[#1d5a45] hover:text-ink",
                   )}
                 >
                   {o.label}

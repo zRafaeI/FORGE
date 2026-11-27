@@ -109,7 +109,7 @@ export function FeedbackDialog({ open, onClose, page }: { open: boolean; onClose
                 onClick={() => setKind(k.value)}
                 className={cn(
                   "h-9 rounded-md border px-3 text-[13px] whitespace-nowrap transition-colors",
-                  active ? "border-accent bg-accent-deep/45 text-ink" : "border-line text-muted hover:border-[#3b443b] hover:text-ink",
+                  active ? "border-accent bg-accent-deep/45 text-ink" : "border-line text-muted hover:border-[#1d5a45] hover:text-ink",
                 )}
               >
                 {k.label}
@@ -148,7 +148,7 @@ export function FeedbackDialog({ open, onClose, page }: { open: boolean; onClose
             type="checkbox"
             checked={contact}
             onChange={(e) => setContact(e.target.checked)}
-            className="mt-1 size-4 shrink-0 accent-[#a5b89b]"
+            className="mt-1 size-4 shrink-0 accent-[#0CD56F]"
           />
           <span>
             Pode me responder por e-mail

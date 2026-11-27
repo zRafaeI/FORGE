@@ -16,7 +16,7 @@ export function ChallengeCard({ data, today }: { data: ForgeData; today: DateKey
   const p = dayProgress(c, data, today);
 
   return (
-    <Link href="/desafios" className="surface group block rounded-lg p-5 transition-colors hover:border-[#3b443b]">
+    <Link href="/desafios" className="surface group block rounded-lg p-5 transition-colors hover:border-[#1d5a45]">
       <p className="flex items-center gap-2 text-[13px] text-muted">
         <Flag size={14} className="text-accent" aria-hidden />
         {c.name}

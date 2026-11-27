@@ -127,7 +127,7 @@ export function DayRuler({
         {nowRel !== null && (
           <div className="absolute top-0 -translate-x-1/2" style={{ left: `${nowRel * 100}%` }}>
             <div className="num -mt-1 mb-1 text-center text-[11px] font-medium text-accent">{minutesToTime(nowMin)}</div>
-            <div className="animate-ember mx-auto h-[22px] w-[2px] rounded-full bg-accent shadow-[0_0_12px_2px_rgb(165_184_155/0.55)]" />
+            <div className="animate-ember mx-auto h-[22px] w-[2px] rounded-full bg-accent shadow-[0_0_12px_2px_rgb(12_213_111/0.55)]" />
           </div>
         )}
       </div>

@@ -175,7 +175,7 @@ export function SettingsPage() {
             <button
               type="button"
               onClick={openFeedback}
-              className="surface group flex items-center gap-4 rounded-lg p-5 text-left transition-colors hover:border-[#3b443b]"
+              className="surface group flex items-center gap-4 rounded-lg p-5 text-left transition-colors hover:border-[#1d5a45]"
             >
               <MessageSquarePlus size={20} className="shrink-0 text-accent" aria-hidden />
               <div className="min-w-0 flex-1 text-sm leading-relaxed">
@@ -185,7 +185,7 @@ export function SettingsPage() {
               <ChevronRight size={17} className="shrink-0 text-faint transition-colors group-hover:text-ink" aria-hidden />
             </button>
           )}
-          <Link href="/privacidade" className="surface group flex items-center gap-4 rounded-lg p-5 transition-colors hover:border-[#3b443b]">
+          <Link href="/privacidade" className="surface group flex items-center gap-4 rounded-lg p-5 transition-colors hover:border-[#1d5a45]">
             <ShieldCheck size={20} className="shrink-0 text-accent" aria-hidden />
             <div className="min-w-0 flex-1 text-sm leading-relaxed">
               <p>Privacidade</p>
@@ -193,7 +193,7 @@ export function SettingsPage() {
             </div>
             <ChevronRight size={17} className="shrink-0 text-faint transition-colors group-hover:text-ink" aria-hidden />
           </Link>
-          <Link href="/apoiar" className="surface group flex items-center gap-4 rounded-lg p-5 transition-colors hover:border-[#3b443b]">
+          <Link href="/apoiar" className="surface group flex items-center gap-4 rounded-lg p-5 transition-colors hover:border-[#1d5a45]">
             <Heart size={20} className="shrink-0 text-accent" aria-hidden />
             <div className="min-w-0 flex-1 text-sm leading-relaxed">
               <p>Apoiar o FORGE</p>

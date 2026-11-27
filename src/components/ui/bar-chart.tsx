@@ -89,7 +89,7 @@ export function BarChart({
                     className={cn(
                       "relative w-full max-w-6 rounded-t-[4px] transition-[height,background] duration-500 ease-[var(--ease-forge)]",
                       d.highlight ? "bg-accent" : "bg-accent-deep",
-                      isActive && "bg-[#b4c6aa]",
+                      isActive && "bg-[#3ae38b]",
                       "group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-accent",
                     )}
                     style={{ height: d.value > 0 ? `max(${h}%, 3px)` : 0 }}

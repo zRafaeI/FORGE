@@ -31,7 +31,7 @@ export function CheckButton({
       className={cn(
         "group/check relative inline-flex shrink-0 items-center justify-center rounded-full border transition-[background,border,box-shadow] duration-200",
         size === "md" ? "size-7" : "size-6",
-        done && "border-accent bg-accent text-bg shadow-[0_0_0_4px_rgb(165_184_155/0.12)]",
+        done && "border-accent bg-accent text-bg shadow-[0_0_0_4px_rgb(12_213_111/0.12)]",
         rest && "border-line bg-surface-2 text-muted",
         !status && "border-[#465046] bg-transparent text-transparent hover:border-accent hover:text-accent/60",
       )}

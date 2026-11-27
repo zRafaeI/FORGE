@@ -165,7 +165,7 @@ function HabitCard({
             className={cn(
               "aspect-square rounded-[4px] transition-colors",
               i < DAYS - 14 && "hidden sm:block",
-              state === "done" && "bg-accent hover:bg-[#b4c6aa]",
+              state === "done" && "bg-accent hover:bg-[#3ae38b]",
               state === "rest" && "bg-surface-3 bg-[repeating-linear-gradient(135deg,transparent_0_3px,rgb(255_255_255/0.06)_3px_5px)] hover:bg-[#333b33]",
               state === "miss" && "bg-surface-2 hover:bg-surface-3",
               state === "open" && "border border-dashed border-accent-deep bg-transparent hover:bg-surface-2",
