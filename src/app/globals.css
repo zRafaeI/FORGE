@@ -6,12 +6,12 @@
  * Profundidade vem de camadas de superfície e luz discreta, não de sombras genéricas.
  */
 @theme {
-  --color-bg: #011D16;
-  --color-surface: #04261d;
-  --color-surface-2: #072f24;
-  --color-surface-3: #0b392c;
-  --color-line: #134a38;
-  --color-line-soft: #0c3528;
+  --color-bg: #011510;
+  --color-surface: #031e17;
+  --color-surface-2: #06271e;
+  --color-surface-3: #0a3127;
+  --color-line: #11402f;
+  --color-line-soft: #0a2c22;
   --color-accent: #0CD56F;
   --color-accent-deep: #0a8f4f;
   --color-ink: #eaf6ef;
