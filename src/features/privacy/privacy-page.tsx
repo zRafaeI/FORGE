@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/layout/page-header";
 
 /** Página de privacidade em linguagem simples. Pode ser lida com ou sem login. */
 
-export const PRIVACY_UPDATED = "26 de novembro de 2026";
+export const PRIVACY_UPDATED = "28 de novembro de 2026";
 export const PRIVACY_CONTACT = "eurafaelguerra@gmail.com";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -62,6 +62,11 @@ export function PrivacyPage() {
               o desafio vê a lista de participantes com o nome do seu perfil; os outros participantes não. As fotos do
               check-in são opcionais e ficam numa área privada: no app, só você vê. Outros participantes nunca têm acesso,
               e quem mantém o FORGE não as consulta.
+            </Item>
+            <Item title="E-mails">
+              De vez em quando, quem faz o FORGE pode mandar um e-mail sobre o app para o endereço da sua conta, como um
+              lembrete para voltar ou uma novidade importante. É raro, e você pode pedir para parar a qualquer momento
+              respondendo o próprio e-mail.
             </Item>
             <Item title="Estatísticas de visita">
               Contagem de visitas e páginas mais acessadas, sem cookies e sem identificar quem você é. Servem só para saber se o
