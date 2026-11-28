@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import * as webpush from "web-push";
 import { waterPushFor, type PushNutrition } from "@/lib/logic/water-push";
 import { challengePushFor, type ChallengePushJob } from "@/lib/logic/challenge-push";
+import { dailyPushFor, type DailyPushJob } from "@/lib/logic/daily-push";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -101,8 +102,10 @@ export async function POST(req: Request) {
   const feedback = await notifyFeedback(db, secret, vapid);
   // Lembrete do desafio, à noite, para quem ainda não completou o dia.
   const challenge = await notifyChallenges(db, secret, vapid, now);
+  // Lembrete diário de hábitos e compromissos, no horário escolhido por cada pessoa.
+  const daily = await notifyDaily(db, secret, vapid, now);
 
-  return Response.json({ checked: jobs.targets.length, sent: sent.length, delivered, removed: gone.length, feedback, challenge });
+  return Response.json({ checked: jobs.targets.length, sent: sent.length, delivered, removed: gone.length, feedback, challenge, daily });
 }
 
 interface FeedbackJobs {
@@ -184,5 +187,42 @@ async function notifyChallenges(
     }),
   );
   if (reminded.length) await db.rpc("forge_challenge_reminded", { p_secret: secret, p_items: reminded });
+  return reminded.length;
+}
+
+async function notifyDaily(
+  db: SupabaseClient,
+  secret: string,
+  vapid: { subject: string; publicKey: string; privateKey: string },
+  now: Date,
+): Promise<number> {
+  const { data, error } = await db.rpc("forge_daily_push_jobs", { p_secret: secret });
+  if (error || !data) return 0; // daily-reminder.sql ainda não foi rodado
+  const reminded: { userId: string; day: string }[] = [];
+  await Promise.all(
+    (data as DailyPushJob[]).map(async (job) => {
+      const decision = dailyPushFor(job, now);
+      if (!decision.due) return;
+      const payload = JSON.stringify({ title: decision.title, body: decision.body, tag: "forge-daily", url: "/", kind: "daily" });
+      let ok = false;
+      await Promise.all(
+        (job.subscriptions ?? []).map(async (s) => {
+          try {
+            await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, {
+              vapidDetails: vapid,
+              TTL: 2 * 60 * 60,
+              urgency: "normal",
+              topic: "forge-daily",
+            });
+            ok = true;
+          } catch (err) {
+            console.error("push: falha no lembrete diário", (err as { statusCode?: number }).statusCode ?? "", (err as Error).message);
+          }
+        }),
+      );
+      if (ok) reminded.push({ userId: job.userId, day: decision.day });
+    }),
+  );
+  if (reminded.length) await db.rpc("forge_daily_push_done", { p_secret: secret, p_items: reminded });
   return reminded.length;
 }

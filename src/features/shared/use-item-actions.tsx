@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/feedback";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { ActivityFormDialog } from "@/features/routine/activity-form";
 import { HabitFormDialog } from "@/features/habits/habit-form";
+import { notifyChecked } from "@/features/reminders/daily-reminder";
 
 /**
  * Ações comuns sobre itens (concluir, descansar, editar, excluir) e os
@@ -25,6 +26,7 @@ export function useItemActions(today: DateKey) {
   const toggle = useCallback(
     (item: Pick<DayItem, "kind" | "id" | "status">, date: DateKey = today) => {
       update((d) => setCheck(d, item.kind, item.id, date, item.status === "done" ? null : "done"));
+      if (item.status !== "done") notifyChecked();
     },
     [today, update],
   );

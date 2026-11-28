@@ -275,7 +275,7 @@ function ReminderPanel() {
               disabled={!n.waterGoalMl}
               checked={current.onlyWhenBehind && !!n.waterGoalMl}
               onChange={(e) => save({ onlyWhenBehind: e.target.checked })}
-              className="mt-0.5 size-4 accent-[#A5B89B]"
+              className="mt-0.5 size-4 accent-[#0CD56F]"
             />
             <span>
               Só lembrar quando eu estiver abaixo do ritmo da meta

@@ -9,6 +9,7 @@ import type {
   JoinedChallenge,
   CheckStatus,
   DateKey,
+  DailyReminder,
   ForgeData,
   Habit,
   ItemKind,
@@ -576,4 +577,10 @@ export function setChallengePhoto(data: ForgeData, id: string, date: DateKey, pa
   if (path) forChallenge[date] = path;
   else delete forChallenge[date];
   return { ...data, challenges: { ...ch, photos: { ...ch.photos, [id]: forChallenge } } };
+}
+
+/* ---------- Lembrete diário ---------- */
+
+export function setDailyReminder(data: ForgeData, reminder: DailyReminder): ForgeData {
+  return { ...data, dailyReminder: { enabled: reminder.enabled, time: reminder.time } };
 }

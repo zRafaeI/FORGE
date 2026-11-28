@@ -11,6 +11,7 @@ import { formatLongDate, formatShortDate } from "@/lib/logic/dates";
 import { describeRecurrence } from "@/lib/logic/recurrence";
 import { checkKey, habitHistory, habitRate, habitStreak, indexCheckIns, type CheckIndex, type HabitDayState } from "@/lib/logic/stats";
 import { PageHeader } from "@/components/layout/page-header";
+import { DailyReminderButton, notifyChecked } from "@/features/reminders/daily-reminder";
 import { Button } from "@/components/ui/button";
 import { CheckButton } from "@/components/ui/check";
 import { EmptyState } from "@/components/ui/feedback";
@@ -39,9 +40,12 @@ function HabitsContent({ today }: { today: string }) {
         title="Hábitos"
         description="Comportamentos que você repete até virarem parte de você. Toque num dia da grade para corrigir um registro passado."
         actions={
+          <>
+          <DailyReminderButton />
           <Button variant="primary" icon={<Plus size={16} />} onClick={() => actions.newHabit()}>
             Novo hábito
           </Button>
+          </>
         }
       />
 
@@ -96,6 +100,7 @@ function HabitCard({
     // vazio → concluído → descanso → vazio
     const next = state === "done" ? "rest" : state === "rest" ? null : "done";
     update((d) => setCheck(d, "habit", habit.id, date, next));
+    if (next === "done") notifyChecked();
   }
 
   return (

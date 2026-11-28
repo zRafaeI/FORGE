@@ -379,7 +379,7 @@ export function OpeningBalanceDialog({ open, onClose }: { open: boolean; onClose
           {(p) => <Input {...p} autoFocus inputMode="decimal" placeholder="0,00" value={value} onChange={(e) => setValue(e.target.value)} />}
         </Field>
         <label className="flex items-center gap-2.5 text-sm text-muted">
-          <input type="checkbox" checked={negative} onChange={(e) => setNegative(e.target.checked)} className="size-4 accent-[#A5B89B]" />
+          <input type="checkbox" checked={negative} onChange={(e) => setNegative(e.target.checked)} className="size-4 accent-[#0CD56F]" />
           O saldo estava negativo
         </label>
         <button type="submit" hidden />

@@ -8,7 +8,7 @@ export interface CategoryMeta {
 }
 
 export const CATEGORIES: Record<CategoryId, CategoryMeta> = {
-  disciplina: { id: "disciplina", label: "Disciplina", tone: "#A5B89B" },
+  disciplina: { id: "disciplina", label: "Disciplina", tone: "#0CD56F" },
   treino: { id: "treino", label: "Treinamento", tone: "#C3CDA0" },
   alimentacao: { id: "alimentacao", label: "Alimentação", tone: "#B8A98A" },
   estudos: { id: "estudos", label: "Estudos", tone: "#9FB4B0" },

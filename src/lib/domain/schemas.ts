@@ -399,6 +399,7 @@ const forgeDataV4 = z.object({
   faith: faithSchema,
   finance: financeSchema,
   challenges: challengesSchema.optional(),
+  dailyReminder: z.object({ enabled: z.boolean(), time }).optional(),
 });
 const forgeDataV3 = z.object({ ...forgeDataV2Shape, schemaVersion: z.literal(3), study: studySchema, nutrition: nutritionSchema });
 const forgeDataV2 = z.object(forgeDataV2Shape);

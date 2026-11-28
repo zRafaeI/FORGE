@@ -368,6 +368,14 @@ export interface ChallengeData {
 
 export const EMPTY_CHALLENGES: ChallengeData = { joined: [], checks: {}, photos: {} };
 
+/** Lembrete diário: no horário escolhido, avisa se ainda faltar algo do dia (hábitos e compromissos). */
+export interface DailyReminder {
+  enabled: boolean;
+  time: TimeOfDay;
+}
+
+export const DEFAULT_DAILY_REMINDER_TIME = "19:00";
+
 export interface ForgeData {
   schemaVersion: typeof SCHEMA_VERSION;
   profile: Profile | null;
@@ -381,6 +389,8 @@ export interface ForgeData {
   finance: FinanceData;
   /** Opcional: só existe para quem entrou em algum desafio. */
   challenges?: ChallengeData;
+  /** Opcional: só existe para quem configurou o lembrete diário. */
+  dailyReminder?: DailyReminder;
 }
 
 export const EMPTY_STUDY: StudyData = { subjects: [], sessions: [], books: [], readingLogs: [], timer: null };

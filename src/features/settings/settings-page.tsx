@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { Field, Input, Toggle } from "@/components/ui/form";
 import { useToast } from "@/components/ui/feedback";
+import { supabaseConfigured } from "@/lib/data/supabase-client";
+import { DailyReminderSettings } from "@/features/reminders/daily-reminder";
 
 export function SettingsPage() {
   const { data, update, exportJson, importJson, reset, syncStatus } = useForge();
@@ -89,6 +91,7 @@ export function SettingsPage() {
       <PageHeader title="Configurações" description="Seu perfil, o ritmo do seu dia e o controle dos seus dados." />
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="flex flex-col gap-12">
         <form onSubmit={save} className="flex flex-col gap-6" noValidate aria-labelledby="profile-title">
           <h2 id="profile-title" className="type-title text-[15px]">
             Perfil e ritmo
@@ -124,7 +127,7 @@ export function SettingsPage() {
               type="checkbox"
               checked={faith}
               onChange={(e) => setFaith(e.target.checked)}
-              className="mt-0.5 size-4 accent-[#A5B89B]"
+              className="mt-0.5 size-4 accent-[#0CD56F]"
             />
             <span>
               <span className="block text-sm">Usar a seção Fé e propósito</span>
@@ -139,6 +142,15 @@ export function SettingsPage() {
             </Button>
           </div>
         </form>
+        {supabaseConfigured && (
+          <section className="flex flex-col gap-6" aria-labelledby="reminders-title">
+            <h2 id="reminders-title" className="type-title text-[15px]">
+              Lembretes
+            </h2>
+            <DailyReminderSettings />
+          </section>
+        )}
+        </div>
 
         <section className="flex flex-col gap-6" aria-labelledby="data-title">
           <h2 id="data-title" className="type-title text-[15px]">

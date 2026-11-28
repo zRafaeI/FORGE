@@ -15,6 +15,7 @@ import { Wordmark } from "./logo";
 import { TimerIndicator } from "@/features/study/timer-indicator";
 import { WaterReminderService } from "@/features/nutrition/water-reminder-service";
 import { ChallengeSyncService } from "@/features/challenges/challenge-sync";
+import { DailyReminderPrompt } from "@/features/reminders/daily-reminder";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { data, status, error, dismissError, retry, syncStatus } = useForge();
@@ -56,6 +57,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="ambient min-h-dvh lg:grid lg:grid-cols-[248px_1fr]">
       <WaterReminderService />
       <ChallengeSyncService />
+      <DailyReminderPrompt />
       {/* Navegação lateral — desktop */}
       <aside className="sticky top-0 hidden h-dvh flex-col border-r border-line-soft bg-bg/70 px-4 py-6 lg:flex">
         <Link href="/" className="mb-9 px-2" aria-label="FORGE, ir para o dashboard">
